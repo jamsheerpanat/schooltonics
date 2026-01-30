@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  octo-postgres:
+    image: postgres:15-alpine
+    container_name: octo-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - octo-postgres-data:/var/lib/postgresql/data
+    networks:
+      - octo-network
+
+  octo-redis:
+    image: redis:alpine
+    container_name: octo-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - octo-redis-data:/data
+    networks:
+      - octo-network
+
+  octo-minio:
+    image: minio/minio
+    container_name: octo-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - octo-minio-data:/data
+    command: server /data --console-address ":${MINIO_CONSOLE_PORT:-9001}"
+    networks:
+      - octo-network
+
+  # Service to create default bucket
+  octo-createbuckets:
+    image: minio/mc
+    container_name: octo-createbuckets
+    depends_on:
+      - octo-minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add octo-minio http://octo-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb octo-minio/octoschoolengine;
+      /usr/bin/mc anonymous set public octo-minio/octoschoolengine;
+      exit 0;
+      "
+    networks:
+      - octo-network
+
+  octo-mailhog:
+    image: mailhog/mailhog
+    container_name: octo-mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    networks:
+      - octo-network
+
+networks:
+  octo-network:
+    driver: bridge
+
+volumes:
+  octo-postgres-data:
+  octo-redis-data:
+  octo-minio-data:
