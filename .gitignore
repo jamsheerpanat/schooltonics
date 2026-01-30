@@ -1,0 +1,59 @@
+# Common
+.DS_Store
+.env
+.env.local
+.env.production
+.env.development
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Laravel
+/apps/api/vendor
+/apps/api/node_modules
+/apps/api/public/hot
+/apps/api/public/storage
+/apps/api/storage/*.key
+/apps/api/.phpunit.result.cache
+/apps/api/Homestead.json
+/apps/api/Homestead.yaml
+/apps/api/auth.json
+/apps/api/npm-debug.log
+
+# Node / Next.js
+/apps/web/node_modules
+/apps/web/.next
+/apps/web/build
+/apps/web/out
+/apps/web/.pnp
+/apps/web/.pnp.js
+/apps/web/coverage
+
+# Flutter
+/apps/mobile/build
+/apps/mobile/.dart_tool
+/apps/mobile/.flutter-plugins
+/apps/mobile/.flutter-plugins-dependencies
+/apps/mobile/.pub-cache
+/apps/mobile/.pub
+/apps/mobile/android/app/src/main/assets/flutter_assets
+/apps/mobile/android/gradlew.bat
+/apps/mobile/android/.gradle
+/apps/mobile/android/captures/
+/apps/mobile/android/gradlew
+/apps/mobile/android/local.properties
+/apps/mobile/ios/Flutter/App.framework
+/apps/mobile/ios/Flutter/Flutter.framework
+/apps/mobile/ios/Flutter/Generated.xcconfig
+/apps/mobile/ios/Flutter/app.flx
+/apps/mobile/ios/Flutter/app.zip
+/apps/mobile/ios/Flutter/flutter_assets/
+/apps/mobile/ios/ServiceDefinitions.json
+/apps/mobile/ios/Runner/GeneratedPluginRegistrant.*
+
+# IDEs
+.idea
+.vscode
+*.iml
