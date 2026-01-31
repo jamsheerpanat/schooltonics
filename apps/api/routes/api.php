@@ -139,4 +139,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:parent,principal')->group(function () {
         Route::get('/parent/child/{studentId}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'parentNotes']);
     });
+
+    // Homework
+    Route::middleware('role:teacher,principal')->group(function () {
+        Route::post('/class-sessions/{id}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'store']);
+        Route::get('/class-sessions/{id}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'show']);
+    });
+
+    Route::middleware('role:student,principal')->group(function () {
+        Route::get('/student/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'studentHomework']);
+    });
+
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/child/{studentId}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'parentHomework']);
+    });
 });
