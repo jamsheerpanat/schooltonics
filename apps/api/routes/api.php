@@ -24,6 +24,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
+    // Devices
+    Route::post('/devices/register', [\App\Http\Controllers\Api\V1\DeviceController::class, 'register']);
+    Route::post('/devices/unregister', [\App\Http\Controllers\Api\V1\DeviceController::class, 'unregister']);
+
     // Principal Routes
     Route::prefix('principal')->middleware('role:principal')->group(function () {
         Route::get('/dashboard', function () {

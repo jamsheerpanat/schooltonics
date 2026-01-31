@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Guardian::class);
     }
+
+    public function devices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserDevice::class);
+    }
 }
