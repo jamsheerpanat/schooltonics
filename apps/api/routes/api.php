@@ -166,4 +166,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:parent,principal')->group(function () {
         Route::get('/parent/child/{studentId}/recognition', [\App\Http\Controllers\Api\V1\RecognitionController::class, 'parentRecognition']);
     });
+
+    // Announcements
+    Route::middleware('role:principal,office')->group(function () {
+        Route::post('/announcements', [\App\Http\Controllers\Api\V1\AnnouncementController::class, 'store']);
+    });
+
+    Route::get('/announcements', [\App\Http\Controllers\Api\V1\AnnouncementController::class, 'index']);
+    Route::get('/announcements/{id}', [\App\Http\Controllers\Api\V1\AnnouncementController::class, 'show']);
 });
