@@ -180,4 +180,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/calendar/events', [\App\Http\Controllers\Api\V1\CalendarEventController::class, 'store']);
     });
     Route::get('/calendar/events', [\App\Http\Controllers\Api\V1\CalendarEventController::class, 'index']);
+
+    // Fee Management
+    Route::middleware('role:office,principal')->group(function () {
+        Route::post('/fees/items', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeItem']);
+        Route::post('/fees/dues/assign', [\App\Http\Controllers\Api\V1\FeeController::class, 'assignDues']);
+        Route::get('/fees/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentDues']);
+    });
 });
