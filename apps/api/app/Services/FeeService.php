@@ -110,6 +110,14 @@ class FeeService
                 'created_by_user_id' => $userId,
             ]);
 
+            AuditLog::create([
+                'user_id' => $userId,
+                'action' => 'receipt_created',
+                'entity_type' => 'Receipt',
+                'entity_id' => $receipt->id,
+                'description' => "Receipt #{$receipt->id} created for amount {$receipt->amount}",
+            ]);
+
             // 2. Allocate to dues (FIFO)
             $remainingAmount = $receipt->amount;
             $unpaidDues = StudentDue::where('student_id', $data['student_id'])

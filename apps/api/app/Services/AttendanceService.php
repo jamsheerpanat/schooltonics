@@ -131,6 +131,7 @@ class AttendanceService
                 if ($guardian->user) {
                     $pushService->sendToUser($guardian->user, $title, $body);
                 }
+            }
         }
     }
 

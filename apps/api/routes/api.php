@@ -14,7 +14,7 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 });
 
 // Protected Routes
@@ -110,7 +110,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Attendance Routes
     Route::middleware('role:teacher,principal')->group(function () {
         Route::post('/attendance/sessions', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'initializeSession']);
-        Route::post('/attendance/sessions/{id}/submit', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'submitSession']);
+        Route::post('/attendance/sessions/{id}/submit', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'submitSession'])->middleware('throttle:30,1');
         Route::get('/attendance/section/{sectionId}', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getSectionAttendance']);
     });
 
@@ -188,7 +188,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/fees/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentDues']);
         // Receipts
         // Receipts
-        Route::post('/fees/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeReceipt']);
+        Route::post('/fees/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeReceipt'])->middleware('throttle:20,1');
         Route::get('/fees/receipts/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentReceipts']);
     });
 
