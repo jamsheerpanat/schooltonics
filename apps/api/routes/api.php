@@ -125,4 +125,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:principal')->group(function () {
         Route::get('/principal/attendance/summary', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getPrincipalSummary']);
     });
+
+    // Class Notes
+    Route::middleware('role:teacher,principal')->group(function () {
+        Route::post('/class-sessions/{id}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'store']);
+        Route::get('/class-sessions/{id}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'show']);
+    });
+
+    Route::middleware('role:student,principal')->group(function () {
+        Route::get('/student/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'studentNotes']);
+    });
+
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/child/{studentId}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'parentNotes']);
+    });
 });
