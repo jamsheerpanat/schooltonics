@@ -50,4 +50,26 @@ class FeeController extends Controller
         $dues = $this->feeService->getStudentDues($studentId);
         return response()->json($dues);
     }
+
+    public function storeReceipt(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'amount' => 'required|numeric|min:0.01',
+            'method' => 'required|in:cash,bank',
+            'receipt_date' => 'nullable|date',
+            'reference' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $receipt = $this->feeService->createReceipt($request->all(), Auth::id());
+
+        return response()->json($receipt, 201);
+    }
+
+    public function getStudentReceipts($studentId)
+    {
+        $receipts = $this->feeService->getStudentReceipts($studentId);
+        return response()->json($receipts);
+    }
 }

@@ -186,5 +186,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/fees/items', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeItem']);
         Route::post('/fees/dues/assign', [\App\Http\Controllers\Api\V1\FeeController::class, 'assignDues']);
         Route::get('/fees/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentDues']);
+        // Receipts
+        Route::post('/fees/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeReceipt']);
+        Route::get('/fees/receipts/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentReceipts']);
     });
 });
