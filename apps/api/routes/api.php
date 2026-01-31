@@ -70,4 +70,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Academic Structure Retrieval
     Route::get('/academic/structure', [\App\Http\Controllers\Api\V1\AcademicController::class, 'getStructure']);
+
+    // Student Management (Office + Principal)
+    Route::middleware('role:office,principal')->group(function () {
+        Route::get('/students', [\App\Http\Controllers\Api\V1\StudentController::class, 'index']);
+        Route::post('/students', [\App\Http\Controllers\Api\V1\StudentController::class, 'store']);
+        Route::get('/students/{id}', [\App\Http\Controllers\Api\V1\StudentController::class, 'show']);
+        Route::post('/students/{id}/enroll', [\App\Http\Controllers\Api\V1\StudentController::class, 'enroll']);
+    });
 });

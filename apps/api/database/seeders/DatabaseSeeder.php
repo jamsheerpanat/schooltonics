@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LocalAdminSeeder::class,
             AcademicStructureSeeder::class,
+            StudentSeeder::class,
         ]);
     }
 }
