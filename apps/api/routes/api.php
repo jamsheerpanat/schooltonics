@@ -106,4 +106,23 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/class-sessions/{id}', [\App\Http\Controllers\Api\V1\ClassSessionController::class, 'show']);
+
+    // Attendance Routes
+    Route::middleware('role:teacher,principal')->group(function () {
+        Route::post('/attendance/sessions', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'initializeSession']);
+        Route::post('/attendance/sessions/{id}/submit', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'submitSession']);
+        Route::get('/attendance/section/{sectionId}', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getSectionAttendance']);
+    });
+
+    Route::middleware('role:student,principal')->group(function () {
+        Route::get('/student/attendance', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getStudentAttendance']);
+    });
+
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/child/{studentId}/attendance', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getParentChildAttendance']);
+    });
+
+    Route::middleware('role:principal')->group(function () {
+        Route::get('/principal/attendance/summary', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getPrincipalSummary']);
+    });
 });

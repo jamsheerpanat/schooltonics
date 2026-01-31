@@ -128,4 +128,72 @@ class AttendanceService
 
         return true;
     }
+
+    /**
+     * Get session data including student roster with current status.
+     */
+    public function getSessionWithRoster(int $sessionId)
+    {
+        $session = AttendanceSession::with('records')->findOrFail($sessionId);
+
+        $activeYear = AcademicYear::where('is_active', true)->firstOrFail();
+
+        $roster = \App\Models\Enrollment::where('section_id', $session->section_id)
+            ->where('academic_year_id', $activeYear->id)
+            ->where('status', 'active')
+            ->with('student')
+            ->get()
+            ->map(function ($enrollment) use ($session) {
+                $record = $session->records->firstWhere('student_id', $enrollment->student_id);
+                return [
+                    'student_id' => $enrollment->student_id,
+                    'student_name' => $enrollment->student->name_en,
+                    'roll_no' => $enrollment->roll_no,
+                    'status' => $record ? $record->status : 'present',
+                    'reason' => $record ? $record->reason : null,
+                ];
+            });
+
+        return [
+            'session' => $session,
+            'roster' => $roster,
+        ];
+    }
+
+    /**
+     * Get attendance summary for principal.
+     */
+    public function getPrincipalSummary(string $date)
+    {
+        $dateFormatted = \Carbon\Carbon::parse($date)->toDateString();
+
+        return \App\Models\Section::with(['grade'])->get()->map(function ($section) use ($dateFormatted) {
+            $session = AttendanceSession::where('section_id', $section->id)
+                ->where('date', $dateFormatted)
+                ->with('records')
+                ->first();
+
+            $totalCount = \App\Models\Enrollment::where('section_id', $section->id)
+                ->where('status', 'active')
+                ->count();
+
+            $presentCount = 0;
+            if ($session && $totalCount > 0) {
+                $absentCount = $session->records->where('status', 'absent')->count();
+                $presentCount = $totalCount - $absentCount;
+                $percentage = ($presentCount / $totalCount) * 100;
+            } else {
+                $percentage = 0;
+            }
+
+            return [
+                'section_id' => $section->id,
+                'section_name' => $section->grade->name . ' - ' . $section->name,
+                'total_students' => $totalCount,
+                'present_count' => $presentCount,
+                'attendance_percentage' => round($percentage, 2),
+                'status' => $session ? $session->status : 'no_session'
+            ];
+        });
+    }
 }
