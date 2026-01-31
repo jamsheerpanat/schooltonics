@@ -56,28 +56,28 @@ export default function PrincipalHealthPage() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.overallAttendance.toFixed(1)}%</div>
+                        <div className="text-3xl font-bold">{stats.overallAttendance.toFixed(1)}%</div>
                         <p className="text-xs text-muted-foreground">Average across all sections</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Submissions</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.submittedCount} / {stats.totalSections}</div>
+                        <div className="text-3xl font-bold">{stats.submittedCount} / {stats.totalSections}</div>
                         <p className="text-xs text-muted-foreground">Sections submitted today</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Alerts</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.alerts}</div>
-                        <p className="text-xs text-muted-foreground">Critical notices today</p>
+                        <div className="text-3xl font-bold">{stats.alerts}</div>
+                        <p className="text-xs text-muted-foreground">Require attention</p>
                     </CardContent>
                 </Card>
             </div>
@@ -89,40 +89,48 @@ export default function PrincipalHealthPage() {
                         <CardTitle>Section Attendance Matrix</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Section</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Attendance %</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {summary?.map((section) => (
-                                    <TableRow key={section.section_id}>
-                                        <TableCell className="font-medium">{section.section_name}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={
-                                                section.status === 'submitted' || section.status === 'locked'
-                                                    ? 'default'
-                                                    : section.status === 'draft' ? 'secondary' : 'destructive'
-                                            }>
-                                                {section.status === 'no_session' ? 'Pending' : section.status.toUpperCase()}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{section.attendance_percentage}%</TableCell>
-                                        <TableCell className="text-right">
-                                            <Link href={`/principal/section/${section.section_id}?date=${date}`}>
-                                                <Badge variant="outline" className="cursor-pointer hover:bg-slate-100">
-                                                    Details <ChevronRight className="ml-1 h-3 w-3" />
-                                                </Badge>
-                                            </Link>
-                                        </TableCell>
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Section</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Attendance %</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {summary?.map((section) => (
+                                        <TableRow key={section.section_id}>
+                                            <TableCell className="font-medium">{section.section_name}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={
+                                                    section.status === 'submitted' || section.status === 'locked'
+                                                        ? 'outline'
+                                                        : section.status === 'draft' ? 'secondary' : 'default'
+                                                } className={
+                                                    section.status === 'submitted' || section.status === 'locked'
+                                                        ? 'text-emerald-700 border-emerald-200 bg-emerald-50'
+                                                        : section.status === 'draft'
+                                                            ? 'text-blue-700 border-blue-200 bg-blue-50'
+                                                            : 'text-amber-700 border-amber-200 bg-amber-50 hover:bg-amber-100'
+                                                }>
+                                                    {section.status === 'no_session' ? 'Pending' : section.status.toUpperCase()}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-mono">
+                                                {section.attendance_percentage > 0 ? `${section.attendance_percentage}%` : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Link href={`/principal/section/${section.section_id}?date=${date}`} className="text-sm text-blue-600 hover:underline flex items-center justify-end">
+                                                    View Details <ChevronRight className="ml-1 h-3 w-3" />
+                                                </Link>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -130,18 +138,18 @@ export default function PrincipalHealthPage() {
                 <div className="space-y-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-red-600 flex items-center">
+                            <CardTitle className="text-amber-700 flex items-center">
                                 <AlertCircle className="h-5 w-5 mr-2" />
-                                Critical Alerts
+                                Attention Needed
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {summary?.filter(s => s.status === 'no_session').map(s => (
-                                <Alert key={s.section_id} variant="destructive">
-                                    <Clock className="h-4 w-4" />
-                                    <AlertTitle>Missing Submission</AlertTitle>
-                                    <AlertDescription>
-                                        {s.section_name} has not started attendance.
+                                <Alert key={s.section_id} className="border-amber-200 bg-amber-50">
+                                    <Clock className="h-4 w-4 text-amber-600" />
+                                    <AlertTitle className="text-amber-800">Submission Pending</AlertTitle>
+                                    <AlertDescription className="text-amber-700">
+                                        {s.section_name} has not submitted attendance yet.
                                     </AlertDescription>
                                 </Alert>
                             ))}
