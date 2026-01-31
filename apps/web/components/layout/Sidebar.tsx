@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, School, Settings, LogOut, Megaphone, Calendar, DollarSign } from "lucide-react";
+import { LayoutDashboard, Users, School, Settings, LogOut, Megaphone, Calendar, DollarSign, FileBarChart } from "lucide-react";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -39,6 +39,12 @@ export function Sidebar() {
             icon: Users,
             href: "/office",
             active: pathname === "/office",
+        },
+        {
+            label: "Reports",
+            icon: FileBarChart,
+            href: "/office/reports",
+            active: pathname.startsWith("/office/reports"),
         },
     ];
 

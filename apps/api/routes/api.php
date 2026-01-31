@@ -201,4 +201,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/parent/child/{studentId}/dues', [\App\Http\Controllers\Api\V1\FeeController::class, 'getChildDues']);
         Route::get('/parent/child/{studentId}/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'getChildReceipts']);
     });
+
+    // Operational Reports
+    Route::middleware('role:principal,office')->group(function () {
+        Route::get('/reports/attendance', [\App\Http\Controllers\Api\V1\ReportController::class, 'dailyAttendance']);
+        Route::get('/reports/fees/outstanding', [\App\Http\Controllers\Api\V1\ReportController::class, 'outstandingDues']);
+        Route::get('/reports/students', [\App\Http\Controllers\Api\V1\ReportController::class, 'studentList']);
+    });
 });
