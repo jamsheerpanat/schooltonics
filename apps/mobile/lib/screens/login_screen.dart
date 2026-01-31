@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:octoschool_mobile/screens/parent/overview_screen.dart';
+import 'package:octoschool_mobile/screens/parent/parent_main_screen.dart';
 import 'package:octoschool_mobile/screens/student/student_main_screen.dart';
 import 'package:octoschool_mobile/screens/teacher/my_day_screen.dart';
 import 'package:octoschool_mobile/services/api_service.dart';
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
         nextScreen = const StudentMainScreen();
         break;
       case 'parent':
-        nextScreen = const OverviewScreen();
+        nextScreen = const ParentMainScreen();
         break;
       default:
         nextScreen = const Center(child: Text("Unknown Role"));

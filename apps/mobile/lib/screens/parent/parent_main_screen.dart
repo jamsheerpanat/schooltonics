@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
-import 'today_screen.dart';
-import 'learning_feed_screen.dart';
-import 'attendance_screen.dart';
-
+import 'overview_screen.dart';
 import '../common/announcements_screen.dart';
 import '../common/calendar_events_screen.dart';
 
-class StudentMainScreen extends StatefulWidget {
-  const StudentMainScreen({super.key});
+class ParentMainScreen extends StatefulWidget {
+  const ParentMainScreen({super.key});
 
   @override
-  State<StudentMainScreen> createState() => _StudentMainScreenState();
+  State<ParentMainScreen> createState() => _ParentMainScreenState();
 }
 
-class _StudentMainScreenState extends State<StudentMainScreen> {
+class _ParentMainScreenState extends State<ParentMainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const TodayScreen(),
-    const LearningFeedScreen(),
+    const OverviewScreen(),
     const AnnouncementsScreen(),
     const CalendarEventsScreen(),
   ];
@@ -43,12 +39,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
         selectedItemColor: Colors.blueAccent,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.today),
-            label: 'Today',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_stories),
-            label: 'Learning',
+            icon: Icon(Icons.family_restroom),
+            label: 'Children',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.megaphone_rounded),
