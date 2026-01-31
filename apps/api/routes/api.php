@@ -153,4 +153,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:parent,principal')->group(function () {
         Route::get('/parent/child/{studentId}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'parentHomework']);
     });
+
+    // Student Recognition
+    Route::middleware('role:teacher,principal')->group(function () {
+        Route::post('/class-sessions/{id}/recognition', [\App\Http\Controllers\Api\V1\RecognitionController::class, 'store']);
+    });
+
+    Route::middleware('role:student,principal')->group(function () {
+        Route::get('/student/recognition', [\App\Http\Controllers\Api\V1\RecognitionController::class, 'studentRecognition']);
+    });
+
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/child/{studentId}/recognition', [\App\Http\Controllers\Api\V1\RecognitionController::class, 'parentRecognition']);
+    });
 });
