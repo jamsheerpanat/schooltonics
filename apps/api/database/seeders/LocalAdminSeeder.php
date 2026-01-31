@@ -14,13 +14,49 @@ class LocalAdminSeeder extends Seeder
     public function run(): void
     {
         if (app()->environment('local')) {
-            User::firstOrCreate(
-                ['email' => 'admin@octoschool.com'],
+            $users = [
                 [
-                    'name' => 'Local Admin',
-                    'password' => Hash::make('password'),
-                ]
-            );
+                    'name' => 'Principal Account',
+                    'email' => 'principal@octoschool.com',
+                    'role' => 'principal',
+                ],
+                [
+                    'name' => 'Office Admin',
+                    'email' => 'office@octoschool.com',
+                    'role' => 'office',
+                ],
+                [
+                    'name' => 'Teacher account',
+                    'email' => 'teacher@octoschool.com',
+                    'role' => 'teacher',
+                ],
+                [
+                    'name' => 'Parent account',
+                    'email' => 'parent@octoschool.com',
+                    'role' => 'parent',
+                ],
+                [
+                    'name' => 'Student account',
+                    'email' => 'student@octoschool.com',
+                    'role' => 'student',
+                ],
+                [
+                    'name' => 'Inactive User',
+                    'email' => 'inactive@octoschool.com',
+                    'role' => 'student',
+                    'status' => 'inactive',
+                ],
+            ];
+
+            foreach ($users as $userData) {
+                User::updateOrCreate(
+                    ['email' => $userData['email']],
+                    array_merge($userData, [
+                        'password' => Hash::make('password'),
+                        'status' => $userData['status'] ?? 'active',
+                    ])
+                );
+            }
         }
     }
 }
