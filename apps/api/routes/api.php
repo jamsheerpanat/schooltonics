@@ -80,5 +80,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/guardians', [\App\Http\Controllers\Api\V1\GuardianController::class, 'store']);
         Route::post('/students/{id}/guardians/attach', [\App\Http\Controllers\Api\V1\GuardianController::class, 'attachToStudent']);
         Route::get('/students/{id}/guardians', [\App\Http\Controllers\Api\V1\GuardianController::class, 'getStudentGuardians']);
+
+        Route::get('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'index']);
+        Route::post('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'store']);
     });
 });

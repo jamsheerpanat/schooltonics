@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             LocalAdminSeeder::class,
             AcademicStructureSeeder::class,
             StudentSeeder::class,
+            TeacherAssignmentSeeder::class,
         ]);
     }
 }
