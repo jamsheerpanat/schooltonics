@@ -187,7 +187,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/fees/dues/assign', [\App\Http\Controllers\Api\V1\FeeController::class, 'assignDues']);
         Route::get('/fees/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentDues']);
         // Receipts
+        // Receipts
         Route::post('/fees/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'storeReceipt']);
         Route::get('/fees/receipts/student/{studentId}', [\App\Http\Controllers\Api\V1\FeeController::class, 'getStudentReceipts']);
+    });
+
+    Route::middleware('role:student,principal')->group(function () {
+        Route::get('/student/dues', [\App\Http\Controllers\Api\V1\FeeController::class, 'getMyDues']);
+        Route::get('/student/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'getMyReceipts']);
+    });
+
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/child/{studentId}/dues', [\App\Http\Controllers\Api\V1\FeeController::class, 'getChildDues']);
+        Route::get('/parent/child/{studentId}/receipts', [\App\Http\Controllers\Api\V1\FeeController::class, 'getChildReceipts']);
     });
 });

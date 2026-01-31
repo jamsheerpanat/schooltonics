@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import 'child_attendance_screen.dart';
+import '../common/fees_screen.dart';
 
 class ChildDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> child;
@@ -28,12 +29,14 @@ class _ChildDashboardScreenState extends State<ChildDashboardScreen> {
   }
 
   Future<void> _fetchDashboardData() async {
+    // ... same as before ...
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
+      // ... 
       final now = DateTime.now();
       final from = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 7)));
       final to = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 7)));
@@ -61,7 +64,7 @@ class _ChildDashboardScreenState extends State<ChildDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.child['name_en']),
@@ -72,6 +75,7 @@ class _ChildDashboardScreenState extends State<ChildDashboardScreen> {
               Tab(text: 'Attendance'),
               Tab(text: 'Learning'),
               Tab(text: 'Awards'),
+              Tab(text: 'Fees'),
             ],
           ),
         ),
@@ -81,11 +85,13 @@ class _ChildDashboardScreenState extends State<ChildDashboardScreen> {
             ChildAttendanceView(child: widget.child),
             _buildLearningTab(),
             _buildAwardsTab(),
+            FeesScreen(studentId: widget.child['id']),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildOverviewTab() {
     if (_isLoading) return const Center(child: CircularProgressIndicator());

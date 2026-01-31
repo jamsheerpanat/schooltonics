@@ -5,6 +5,7 @@ import 'attendance_screen.dart';
 
 import '../common/announcements_screen.dart';
 import '../common/calendar_events_screen.dart';
+import '../common/fees_screen.dart';
 
 class StudentMainScreen extends StatefulWidget {
   const StudentMainScreen({super.key});
@@ -21,6 +22,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     const LearningFeedScreen(),
     const AnnouncementsScreen(),
     const CalendarEventsScreen(),
+    const FeesScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -52,11 +54,15 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.megaphone_rounded),
-            label: 'Announcements',
+            label: 'Notice',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month),
             label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.attach_money),
+            label: 'Fees',
           ),
         ],
       ),
