@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CalendarEvent;
 use App\Models\AuditLog;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\DB;
 
 class CalendarEventService
@@ -13,7 +14,7 @@ class CalendarEventService
      */
     public function createEvent(array $data, int $userId)
     {
-        return DB::transaction(function () use ($data, $userId) {
+        $event = DB::transaction(function () use ($data, $userId) {
             $event = CalendarEvent::create([
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -33,6 +34,35 @@ class CalendarEventService
 
             return $event;
         });
+
+        // Trigger Push Notification
+        $this->notifyAudience(
+            $event->visibility, 
+            "New Calendar Event", 
+            "{$event->title} on " . $event->start_date->format('M d')
+        );
+
+        return $event;
+    }
+
+    /**
+     * Notify users based on visibility.
+     */
+    protected function notifyAudience(string $visibility, string $title, string $body)
+    {
+        $query = \App\Models\User::query()->where('status', 'active');
+
+        if ($visibility !== 'all') {
+            $query->where('role', $visibility);
+        }
+
+        $users = $query->get();
+        $pushService = app(PushNotificationService::class);
+
+        foreach ($users as $user) {
+            $pushService->sendToUser($user, $title, $body);
+        }
+    }
     }
 
     /**

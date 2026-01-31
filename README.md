@@ -42,9 +42,15 @@ Access the health check:
 
 *Coming soon*
 
-### 4. Mobile
+### 5. Push Notifications
 
-*Coming soon*
-# deploy test
-# runner online test
-# final deploy test
+To enable push notifications, configure the following in `apps/api/.env`:
+- `FCM_SERVER_KEY`: Your Firebase Cloud Messaging server key.
+
+### 6. Summary of Communication Events
+
+The system triggers push notifications for:
+- **Class Notes**: Sent to students and guardians when notes are posted.
+- **Homework**: Sent to students and guardians when new homework is assigned.
+- **Announcements**: Sent to the target audience (Teachers, Students, or Parents).
+- **Calendar Events**: Sent to the target audience when a school event is created.

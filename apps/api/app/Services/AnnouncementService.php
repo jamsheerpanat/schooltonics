@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Announcement;
 use App\Models\AnnouncementRead;
 use App\Models\AuditLog;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -15,7 +16,7 @@ class AnnouncementService
      */
     public function createAnnouncement(array $data, int $userId)
     {
-        return DB::transaction(function () use ($data, $userId) {
+        $announcement = DB::transaction(function () use ($data, $userId) {
             $announcement = Announcement::create([
                 'title' => $data['title'],
                 'body' => $data['body'],
@@ -34,6 +35,33 @@ class AnnouncementService
 
             return $announcement;
         });
+
+        // Trigger Push Notification
+        if (Carbon::parse($announcement->publish_at)->lte(now())) {
+            $this->notifyAudience($announcement->audience, "New Announcement", $announcement->title);
+        }
+
+        return $announcement;
+    }
+
+    /**
+     * Notify users based on the audience.
+     */
+    protected function notifyAudience(string $audience, string $title, string $body)
+    {
+        $query = \App\Models\User::query()->where('status', 'active');
+
+        if ($audience !== 'all') {
+            $query->where('role', $audience);
+        }
+
+        $users = $query->get();
+        $pushService = app(PushNotificationService::class);
+
+        foreach ($users as $user) {
+            $pushService->sendToUser($user, $title, $body);
+        }
+    }
     }
 
     /**
