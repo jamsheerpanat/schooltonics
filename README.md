@@ -1,21 +1,40 @@
-# OctoSchoolEngine
+# OctoSchoolEngine - V1.0.1 Polished
 
-# OctoSchoolEngine
+> Next-generation school operating system for modern education management.
 
-Next-generation school operating system
+![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![Status](https://img.shields.io/badge/status-production_ready-green.svg)
 
-## Getting Started
+## 🚀 Features
+
+### Core Modules
+- **Academic Management**: Years, Grades, Sections, Subjects.
+- **People**: robust profiles for Students, Teachers, Guardians, and Staff.
+- **Attendance**: Fast daily flows for teachers, real-time updates for parents.
+- **Finance**: Fee structures, dues tracking, and receipt generation.
+
+### Experience Polish (v1.0.1)
+- **Teacher App**: 
+  - "My Day" dashboard with skeletal loading.
+  - Offline-first feel with smart caching.
+- **Student/Parent App**: 
+  - "Today" view for instant timetable access.
+  - Clear fee status indicators ("Outstanding", "Paid").
+- **Principal Dashboard**: 
+  - High-level health metrics.
+  - Actionable alerts for missing attendance.
+- **Office Operations**:
+  - Operational reports with intuitive empty states.
+
+## 🛠 Getting Started
 
 ### Prerequisites
-
 - Docker Desktop / Engine
 - Node.js & NPM
 - PHP 8.2+ & Composer
 
 ### 1. Infrastructure (Local)
-
-Start the local database, cache, and storage services:
-
+Start database & cache:
 ```bash
 cd infra/local
 cp .env.example .env
@@ -23,9 +42,7 @@ docker compose up -d
 ```
 
 ### 2. Backend (API)
-
-Initialize the Laravel API:
-
+Initialize Laravel:
 ```bash
 cd apps/api
 cp .env.example .env
@@ -35,22 +52,44 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-Access the health check:
-`GET http://localhost:8000/api/v1/health`
-
 ### 3. Frontend (Web)
+Launch Next.js dashboard:
+```bash
+cd apps/web
+npm install
+npm run dev
+```
 
-*Coming soon*
+### 4. Mobile App
+Launch Flutter app:
+```bash
+cd apps/mobile
+flutter pub get
+flutter run
+```
 
-### 5. Push Notifications
+## 🎮 Demo Mode
 
-To enable push notifications, configure the following in `apps/api/.env`:
-- `FCM_SERVER_KEY`: Your Firebase Cloud Messaging server key.
+Want to try it out quickly? Reset the database to a clean demo state:
 
-### 6. Summary of Communication Events
+```bash
+# In apps/api directory
+php artisan demo:reset
+```
 
-The system triggers push notifications for:
-- **Class Notes**: Sent to students and guardians when notes are posted.
-- **Homework**: Sent to students and guardians when new homework is assigned.
-- **Announcements**: Sent to the target audience (Teachers, Students, or Parents).
-- **Calendar Events**: Sent to the target audience when a school event is created.
+**Demo Credentials:**
+| Role      | Email                      | Password |
+|-----------|----------------------------|----------|
+| Principal | principal@octoschool.com   | password |
+| Teacher   | teacher1@octoschool.com    | password |
+| Student   | student1@octoschool.com    | password |
+| Parent    | parent1@octoschool.com     | password |
+
+## 📡 Notifications
+The system triggers FCM push notifications for:
+- Attendance (Absent alerts)
+- Class Notes & Homework
+- Announcements & Events
+
+---
+**Released**: 2026-01-31
