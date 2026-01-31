@@ -87,5 +87,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         Route::get('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'index']);
         Route::post('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'store']);
+
+        Route::post('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storePeriod']);
+        Route::post('/timetable-entries', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storeTimetableEntry']);
     });
+
+    // Timetable Retrieval
+    Route::get('/timetable/section/{sectionId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getBySection']);
+    Route::get('/timetable/teacher/{teacherId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getByTeacher']);
 });
