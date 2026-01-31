@@ -95,4 +95,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Timetable Retrieval
     Route::get('/timetable/section/{sectionId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getBySection']);
     Route::get('/timetable/teacher/{teacherId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getByTeacher']);
+
+    // Class Sessions (Teacher + Principal)
+    Route::middleware('role:teacher,principal')->group(function () {
+        Route::post('/class-sessions/open', [\App\Http\Controllers\Api\V1\ClassSessionController::class, 'open']);
+    });
+
+    Route::get('/class-sessions/{id}', [\App\Http\Controllers\Api\V1\ClassSessionController::class, 'show']);
 });
