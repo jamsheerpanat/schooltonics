@@ -11,24 +11,15 @@ import { Users, CheckCircle, AlertCircle, Clock, Search, ChevronRight } from "lu
 import { format } from "date-fns";
 import Link from 'next/link';
 
-interface SectionAttendance {
-    section_id: number;
-    section_name: string;
-    total_students: number;
-    present_count: number;
-    attendance_percentage: number;
-    status: 'draft' | 'submitted' | 'locked' | 'no_session';
-}
+import { HealthDashboardSkeleton } from "@/components/skeletons/HealthDashboardSkeleton";
 
+interface SectionAttendance {
+// ...
 export default function PrincipalHealthPage() {
     const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-
+    // ...
     const { data: summary, isLoading } = useQuery<SectionAttendance[]>({
-        queryKey: ['attendance-summary', date],
-        queryFn: async () => {
-            const response = await api.get(`/principal/attendance/summary?date=${date}`);
-            return response.data;
-        },
+        // ...
     });
 
     const stats = {
@@ -40,7 +31,7 @@ export default function PrincipalHealthPage() {
         alerts: summary?.filter(s => s.status === 'no_session' || s.attendance_percentage < 85).length || 0
     };
 
-    if (isLoading) return <div className="p-8">Loading school health data...</div>;
+    if (isLoading) return <HealthDashboardSkeleton />;
 
     return (
         <div className="space-y-6">

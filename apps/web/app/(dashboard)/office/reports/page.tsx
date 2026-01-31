@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from '@/components/ui/input';
 import { Download, FileBarChart, Users, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
 
 export default function ReportsPage() {
     const [activeTab, setActiveTab] = useState('attendance');
@@ -106,7 +107,9 @@ export default function ReportsPage() {
                     <Card>
                         <CardContent className="p-0">
                             {isLoading ? (
-                                <div className="p-8 text-center text-muted-foreground">Generating report data...</div>
+                                <div className="p-4">
+                                    <TableSkeleton rows={8} />
+                                </div>
                             ) : data.length === 0 ? (
                                 <div className="p-8 text-center text-muted-foreground">No data available. Click 'Generate Report' to view.</div>
                             ) : (
