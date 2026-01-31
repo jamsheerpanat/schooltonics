@@ -51,4 +51,9 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
         ];
     }
+
+    public function guardian(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Guardian::class);
+    }
 }

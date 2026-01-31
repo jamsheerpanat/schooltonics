@@ -43,4 +43,11 @@ class Student extends Model
     {
         return $this->hasOne(Enrollment::class)->where('status', 'active');
     }
+
+    public function guardians(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Guardian::class, 'student_guardians')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
 }

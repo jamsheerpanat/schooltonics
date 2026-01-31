@@ -53,10 +53,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     // Parent Routes
-    Route::prefix('parent')->middleware('role:parent,principal')->group(function () {
-        Route::get('/children', function () {
-            return response()->json(['message' => 'Parent Children - Not Implemented'], 501);
-        });
+    Route::middleware('role:parent,principal')->group(function () {
+        Route::get('/parent/children', [\App\Http\Controllers\Api\V1\ParentController::class, 'getChildren']);
+        Route::get('/parent/child/{studentId}/overview', [\App\Http\Controllers\Api\V1\ParentController::class, 'getChildOverview']);
     });
 
     // Academic Structure Management (Office + Principal)
@@ -71,11 +70,15 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Academic Structure Retrieval
     Route::get('/academic/structure', [\App\Http\Controllers\Api\V1\AcademicController::class, 'getStructure']);
 
-    // Student Management (Office + Principal)
+    // Student & Guardian Management (Office + Principal)
     Route::middleware('role:office,principal')->group(function () {
         Route::get('/students', [\App\Http\Controllers\Api\V1\StudentController::class, 'index']);
         Route::post('/students', [\App\Http\Controllers\Api\V1\StudentController::class, 'store']);
         Route::get('/students/{id}', [\App\Http\Controllers\Api\V1\StudentController::class, 'show']);
         Route::post('/students/{id}/enroll', [\App\Http\Controllers\Api\V1\StudentController::class, 'enroll']);
+
+        Route::post('/guardians', [\App\Http\Controllers\Api\V1\GuardianController::class, 'store']);
+        Route::post('/students/{id}/guardians/attach', [\App\Http\Controllers\Api\V1\GuardianController::class, 'attachToStudent']);
+        Route::get('/students/{id}/guardians', [\App\Http\Controllers\Api\V1\GuardianController::class, 'getStudentGuardians']);
     });
 });
