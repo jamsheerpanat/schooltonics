@@ -1,0 +1,19 @@
+name: Deploy OctoSchoolEngine (On-Prem)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy on server
+        run: |
+          cd /opt/octoschoolengine
+          git pull origin main
+          bash infra/server/deploy.sh
