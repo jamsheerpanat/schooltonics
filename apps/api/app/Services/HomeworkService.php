@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Homework;
 use App\Models\ClassSession;
 use App\Models\AuditLog;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -27,7 +28,7 @@ class HomeworkService
             throw new \Exception("Homework has already been assigned for this session.");
         }
 
-        return DB::transaction(function () use ($session, $data, $teacherId) {
+        $homework = DB::transaction(function () use ($session, $data, $teacherId) {
             $homework = Homework::create([
                 'class_session_id' => $session->id,
                 'title' => $data['title'],
@@ -47,6 +48,41 @@ class HomeworkService
 
             return $homework;
         });
+
+        // Notify students and parents
+        $this->notifyStakeholders($session, "New Homework", "Due on " . Carbon::parse($homework->due_date)->format('M d'));
+
+        return $homework;
+    }
+
+    /**
+     * Notify all students and parents in the section.
+     */
+    protected function notifyStakeholders(ClassSession $session, string $title, string $body)
+    {
+        $enrollments = \App\Models\Enrollment::where('section_id', $session->section_id)
+            ->where('status', 'active')
+            ->with(['student.user', 'student.guardians.user'])
+            ->get();
+
+        $pushService = app(PushNotificationService::class);
+
+        foreach ($enrollments as $enrollment) {
+            $student = $enrollment->student;
+
+            // Notify student
+            if ($student->user) {
+                $pushService->sendToUser($student->user, $title, $body);
+            }
+
+            // Notify guardians
+            foreach ($student->guardians as $guardian) {
+                if ($guardian->user) {
+                    $pushService->sendToUser($guardian->user, $title, $body);
+                }
+            }
+        }
+    }
     }
 
     /**

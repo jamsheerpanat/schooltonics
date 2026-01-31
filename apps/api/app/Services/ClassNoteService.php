@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ClassNote;
 use App\Models\ClassSession;
 use App\Models\AuditLog;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,7 +28,7 @@ class ClassNoteService
             throw new \Exception("Notes have already been posted for this session and cannot be modified.");
         }
 
-        return DB::transaction(function () use ($session, $data, $teacherId) {
+        $notes = DB::transaction(function () use ($session, $data, $teacherId) {
             $notes = ClassNote::create([
                 'class_session_id' => $session->id,
                 'content' => $data['content'],
@@ -45,6 +46,41 @@ class ClassNoteService
 
             return $notes;
         });
+
+        // Notify students and parents
+        $this->notifyStakeholders($session, "New Class Notes", "{$session->subject->name} notes available");
+
+        return $notes;
+    }
+
+    /**
+     * Notify all students and parents in the section.
+     */
+    protected function notifyStakeholders(ClassSession $session, string $title, string $body)
+    {
+        $enrollments = \App\Models\Enrollment::where('section_id', $session->section_id)
+            ->where('status', 'active')
+            ->with(['student.user', 'student.guardians.user'])
+            ->get();
+
+        $pushService = app(PushNotificationService::class);
+
+        foreach ($enrollments as $enrollment) {
+            $student = $enrollment->student;
+
+            // Notify student
+            if ($student->user) {
+                $pushService->sendToUser($student->user, $title, $body);
+            }
+
+            // Notify guardians
+            foreach ($student->guardians as $guardian) {
+                if ($guardian->user) {
+                    $pushService->sendToUser($guardian->user, $title, $body);
+                }
+            }
+        }
+    }
     }
 
     /**
