@@ -174,4 +174,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::get('/announcements', [\App\Http\Controllers\Api\V1\AnnouncementController::class, 'index']);
     Route::get('/announcements/{id}', [\App\Http\Controllers\Api\V1\AnnouncementController::class, 'show']);
+
+    // Academic Calendar
+    Route::middleware('role:principal,office')->group(function () {
+        Route::post('/calendar/events', [\App\Http\Controllers\Api\V1\CalendarEventController::class, 'store']);
+    });
+    Route::get('/calendar/events', [\App\Http\Controllers\Api\V1\CalendarEventController::class, 'index']);
 });
