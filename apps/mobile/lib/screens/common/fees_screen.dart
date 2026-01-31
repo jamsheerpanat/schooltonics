@@ -171,10 +171,20 @@ class _FeesScreenState extends State<FeesScreen> with SingleTickerProviderStateM
 
   Widget _buildStatusBadge(String status) {
     Color color;
+    String label;
+    
     switch(status) {
-      case 'paid': color = Colors.green; break;
-      case 'partial': color = Colors.orange; break;
-      default: color = Colors.red;
+      case 'paid': 
+        color = Colors.green; 
+        label = "PAID";
+        break;
+      case 'partial': 
+        color = Colors.orange; 
+        label = "PARTIAL";
+        break;
+      default: 
+        color = Colors.red;
+        label = "OUTSTANDING";
     }
     
     return Container(
@@ -184,7 +194,7 @@ class _FeesScreenState extends State<FeesScreen> with SingleTickerProviderStateM
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.5))
       ),
-      child: Text(status.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 }

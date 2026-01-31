@@ -28,7 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 // Friendly generic message for 500s unless debug enabled
                 if ($status === 500 && !config('app.debug')) {
-                    $message = 'An unexpected error occurred. Please try again later.';
+                    $message = 'Something went wrong. Please try again.';
+                }
+
+                // Polished 403 message
+                if ($status === 403) {
+                    $message = 'You don’t have access to this section.';
                 }
 
 

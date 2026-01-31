@@ -31,7 +31,7 @@ class ReportController extends Controller
             return [
                 'section_id' => $section->id,
                 'section_name' => $section->grade->name . ' - ' . $section->name,
-                'status' => $submission ? $submission->status : 'missing',
+                'status' => $submission ? $submission->status : 'pending',
                 'submitted_at' => $submission ? $submission->submitted_at : null,
                 'submitted_by' => $submission ? $submission->creator->name : null,
             ];

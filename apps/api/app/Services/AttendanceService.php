@@ -40,7 +40,7 @@ class AttendanceService
                     'action' => 'attendance.session_created',
                     'entity_type' => 'AttendanceSession',
                     'entity_id' => $session->id,
-                    'description' => "Attendance session created for section {$sectionId} on {$dateFormatted}",
+                    'description' => "Attendance sheet generated for section {$sectionId} on {$dateFormatted}",
                 ]);
             }
 
@@ -161,7 +161,7 @@ class AttendanceService
             if ($user && $user->role === 'principal') {
                 return true;
             }
-            throw new \Exception("Teacher is not assigned to this section.");
+            throw new \Exception("You are not assigned to this class.");
         }
 
         return true;
