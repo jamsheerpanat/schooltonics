@@ -4,29 +4,35 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, School, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, School, Settings, LogOut, Megaphone, Calendar } from "lucide-react";
 
 export function Sidebar() {
     const pathname = usePathname();
 
     const routes = [
         {
-            label: "Principal",
-            icon: School,
-            href: "/principal/health",
-            active: pathname.includes("/principal"),
-        },
-        {
-            label: "Office",
+            label: "Dashboard",
             icon: LayoutDashboard,
-            href: "/office",
-            active: pathname.includes("/office"),
+            href: "/principal/health",
+            active: pathname === "/principal/health",
         },
         {
-            label: "Parents",
+            label: "Announcements",
+            icon: Megaphone,
+            href: "/office/announcements",
+            active: pathname === "/office/announcements",
+        },
+        {
+            label: "Calendar",
+            icon: Calendar,
+            href: "/office/calendar",
+            active: pathname === "/office/calendar",
+        },
+        {
+            label: "Staff & Students",
             icon: Users,
-            href: "/parent",
-            active: pathname.includes("/parent"),
+            href: "/office",
+            active: pathname === "/office",
         },
     ];
 
