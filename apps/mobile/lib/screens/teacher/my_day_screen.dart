@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
+import 'class_session_screen.dart';
 
 class MyDayScreen extends StatefulWidget {
   const MyDayScreen({super.key});
@@ -35,6 +36,7 @@ class _MyDayScreenState extends State<MyDayScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -43,9 +45,15 @@ class _MyDayScreenState extends State<MyDayScreen> {
   }
 
   Future<void> _openSession(Map<String, dynamic> classData) async {
+    // If sessions already opened, just navigate
+    if (classData['is_opened'] == true) {
+      _navigateToClassSession(classData);
+      return;
+    }
+
     try {
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final response = await _apiService.post('/class-sessions/open', {
+      await _apiService.post('/class-sessions/open', {
         'section_id': classData['section']['id'],
         'subject_id': classData['subject']['id'],
         'period_id': classData['period']['id'],
@@ -54,19 +62,32 @@ class _MyDayScreenState extends State<MyDayScreen> {
 
       if (!mounted) return;
 
-      // For now, just show a message or navigate to a placeholder
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Session opened for ${classData['subject']['name']}')),
-      );
+      // Refresh to update session status
+      await _fetchMyDay();
       
-      // Refresh to update session id and opened status
-      _fetchMyDay();
+      // Find the updated class data and navigate
+      final updatedClass = _classes.firstWhere((c) => 
+        c['section']['id'] == classData['section']['id'] && 
+        c['subject']['id'] == classData['subject']['id'] &&
+        c['period']['id'] == classData['period']['id']
+      );
+
+      _navigateToClassSession(updatedClass);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     }
+  }
+
+  void _navigateToClassSession(Map<String, dynamic> classData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ClassSessionScreen(classData: classData),
+      ),
+    ).then((_) => _fetchMyDay()); // Refresh when coming back
   }
 
   Color _getStatusColor(String status) {
