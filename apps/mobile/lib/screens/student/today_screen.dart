@@ -63,13 +63,6 @@ class _TodayScreenState extends State<TodayScreen> {
         title: const Text("Today's Classes"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const StudentAttendanceScreen()),
-            ),
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchData,
           ),
