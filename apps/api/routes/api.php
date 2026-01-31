@@ -58,4 +58,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
             return response()->json(['message' => 'Parent Children - Not Implemented'], 501);
         });
     });
+
+    // Academic Structure Management (Office + Principal)
+    Route::middleware('role:office,principal')->group(function () {
+        Route::post('/academic-years', [\App\Http\Controllers\Api\V1\AcademicController::class, 'storeAcademicYear']);
+        Route::post('/academic-years/{id}/activate', [\App\Http\Controllers\Api\V1\AcademicController::class, 'activateAcademicYear']);
+        Route::post('/grades', [\App\Http\Controllers\Api\V1\AcademicController::class, 'storeGrade']);
+        Route::post('/sections', [\App\Http\Controllers\Api\V1\AcademicController::class, 'storeSection']);
+        Route::post('/subjects', [\App\Http\Controllers\Api\V1\AcademicController::class, 'storeSubject']);
+    });
+
+    // Academic Structure Retrieval
+    Route::get('/academic/structure', [\App\Http\Controllers\Api\V1\AcademicController::class, 'getStructure']);
 });
