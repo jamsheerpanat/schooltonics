@@ -24,7 +24,7 @@ class ApiService {
     await prefs.remove('auth_token');
   }
 
-  Future<Map<String, dynamic>> get(String endpoint) async {
+  Future<dynamic> get(String endpoint) async {
     final token = await getToken();
     
     try {
@@ -43,7 +43,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
+  Future<dynamic> post(String endpoint, Map<String, dynamic> body) async {
     final token = await getToken();
 
     try {
@@ -63,7 +63,7 @@ class ApiService {
     }
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return jsonDecode(response.body);
     } else {
