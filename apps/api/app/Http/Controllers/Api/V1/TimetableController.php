@@ -11,6 +11,11 @@ use Illuminate\Validation\Rule;
 
 class TimetableController extends Controller
 {
+    public function indexPeriods()
+    {
+        return response()->json(Period::orderBy('sort_order')->get());
+    }
+
     public function storePeriod(Request $request)
     {
         $validated = $request->validate([

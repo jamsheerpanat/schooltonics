@@ -28,7 +28,23 @@ export default function OfficePage() {
                         <p className="text-muted-foreground">This Month</p>
                     </CardContent>
                 </Card>
+                <Card className="border-blue-200 bg-blue-50/50">
+                    <CardHeader>
+                        <CardTitle>Academic Admin</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Link
+                            href="/office/timetable"
+                            className="flex items-center justify-between p-2 rounded-lg bg-white border border-blue-100 hover:shadow-md transition-all text-blue-600 font-medium"
+                        >
+                            Manage Timetable
+                            <span className="text-xs">→</span>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
+
+import Link from "next/link";

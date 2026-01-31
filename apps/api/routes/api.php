@@ -74,6 +74,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Academic Structure Retrieval
     Route::get('/academic/structure', [\App\Http\Controllers\Api\V1\AcademicController::class, 'getStructure']);
+    Route::get('/teachers', [\App\Http\Controllers\Api\V1\AcademicController::class, 'getTeachers']);
 
     // Student & Guardian Management (Office + Principal)
     Route::middleware('role:office,principal')->group(function () {
@@ -89,6 +90,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'index']);
         Route::post('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'store']);
 
+        Route::get('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'indexPeriods']);
         Route::post('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storePeriod']);
         Route::post('/timetable-entries', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storeTimetableEntry']);
     });

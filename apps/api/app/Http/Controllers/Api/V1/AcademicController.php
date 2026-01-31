@@ -100,4 +100,10 @@ class AcademicController extends Controller
             'subjects' => $subjects,
         ]);
     }
+
+    public function getTeachers()
+    {
+        $teachers = \App\Models\User::where('role', 'teacher')->get();
+        return response()->json($teachers);
+    }
 }
