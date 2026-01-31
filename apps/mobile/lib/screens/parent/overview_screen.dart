@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
-import 'child_attendance_screen.dart';
+import 'child_dashboard_screen.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -112,7 +112,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
           child: InkWell(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ChildAttendanceScreen(child: child)),
+              MaterialPageRoute(builder: (context) => ChildDashboardScreen(child: child)),
             ),
             borderRadius: BorderRadius.circular(15),
             child: Padding(
