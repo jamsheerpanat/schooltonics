@@ -102,7 +102,36 @@ class AttendanceService
             ]);
         });
 
+        // Send notifications for absent students
+        $this->notifyAbsentees($session);
+
         return $session;
+    }
+
+    /**
+     * Notify students and guardians about absence.
+     */
+    protected function notifyAbsentees(AttendanceSession $session)
+    {
+        $absentRecords = $session->records()->where('status', 'absent')->with('student.user', 'student.guardians.user')->get();
+        $pushService = app(PushNotificationService::class);
+
+        foreach ($absentRecords as $record) {
+            $student = $record->student;
+            $title = "Attendance Update";
+            $body = "{$student->name_en} marked Absent today.";
+
+            // Notify student
+            if ($student->user) {
+                $pushService->sendToUser($student->user, $title, $body);
+            }
+
+            // Notify guardians
+            foreach ($student->guardians as $guardian) {
+                if ($guardian->user) {
+                    $pushService->sendToUser($guardian->user, $title, $body);
+                }
+        }
     }
 
     /**
