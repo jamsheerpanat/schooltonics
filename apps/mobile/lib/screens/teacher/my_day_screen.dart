@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../widgets/state_views.dart';
 import '../../services/api_service.dart';
 import 'class_session_screen.dart';
 
@@ -121,6 +122,7 @@ class _MyDayScreenState extends State<MyDayScreen> {
           ),
         ],
       ),
+
       body: _isLoading
           ? ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -128,17 +130,14 @@ class _MyDayScreenState extends State<MyDayScreen> {
               itemBuilder: (context, index) => const SkeletonCard(),
             )
           : _error != null
-              ? Center(child: Text('Error: $_error'))
+              ? ErrorView(
+                  message: _error!,
+                  onRetry: () => _fetchMyDay(forceRefresh: true),
+                )
               : _classes.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.calendar_today, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          const Text('No classes scheduled for today'),
-                        ],
-                      ),
+                  ? const EmptyStateView(
+                      message: "No classes today! Enjoy your day off.",
+                      icon: Icons.check_circle_outline,
                     )
                   : RefreshIndicator(
                       onRefresh: () => _fetchMyDay(forceRefresh: true),

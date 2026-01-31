@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/state_views.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../services/api_service.dart';
 import 'attendance_screen.dart';
@@ -72,6 +73,7 @@ class _TodayScreenState extends State<TodayScreen> {
           ),
         ],
       ),
+
       body: _isLoading
           ? Padding(
               padding: const EdgeInsets.all(16.0),
@@ -90,19 +92,23 @@ class _TodayScreenState extends State<TodayScreen> {
               ),
             )
           : _error != null
-              ? Center(child: Text('Error: $_error'))
+              ? ErrorView(
+                  message: _error!,
+                  onRetry: () => _fetchData(forceRefresh: true),
+                )
               : Column(
                   children: [
                     _buildAttendanceSummary(),
                     Expanded(
                       child: _timetable.isEmpty
-                          ? _buildEmptyState()
+                          ? const EmptyStateView(
+                              message: "No classes today! Enjoy your day.",
+                              icon: Icons.event_available,
+                            )
                           : _buildTimetable(),
                     ),
                   ],
                 ),
-    );
-  }
 
   Widget _buildAttendanceSummary() {
     final bool hasAttendance = _todayAttendance != null;
