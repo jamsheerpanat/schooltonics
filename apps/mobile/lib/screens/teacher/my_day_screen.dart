@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../../services/api_service.dart';
 import 'class_session_screen.dart';
 
@@ -22,15 +23,22 @@ class _MyDayScreenState extends State<MyDayScreen> {
     _fetchMyDay();
   }
 
-  Future<void> _fetchMyDay() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _fetchMyDay({bool forceRefresh = false}) async {
+    // Only show loading indicator on first load or forced refresh if list is empty
+    if (_classes.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
 
     try {
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final response = await _apiService.get('/teacher/my-day?date=$date');
+      final response = await _apiService.get(
+        '/teacher/my-day?date=$date', 
+        useCache: true, 
+        forceRefresh: forceRefresh
+      );
       setState(() {
         _classes = response as List<dynamic>;
         _isLoading = false;
@@ -63,7 +71,7 @@ class _MyDayScreenState extends State<MyDayScreen> {
       if (!mounted) return;
 
       // Refresh to update session status
-      await _fetchMyDay();
+      await _fetchMyDay(forceRefresh: true);
       
       // Find the updated class data and navigate
       final updatedClass = _classes.firstWhere((c) => 
@@ -87,9 +95,8 @@ class _MyDayScreenState extends State<MyDayScreen> {
       MaterialPageRoute(
         builder: (context) => ClassSessionScreen(classData: classData),
       ),
-    ).then((_) => _fetchMyDay()); // Refresh when coming back
+    ).then((_) => _fetchMyDay(forceRefresh: true)); // Refresh when coming back in case state changed
   }
-
   Color _getStatusColor(String status) {
     switch (status) {
       case 'current':
@@ -102,7 +109,6 @@ class _MyDayScreenState extends State<MyDayScreen> {
         return Colors.black;
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,12 +117,16 @@ class _MyDayScreenState extends State<MyDayScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchMyDay,
+            onPressed: () => _fetchMyDay(forceRefresh: true),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 5,
+              itemBuilder: (context, index) => const SkeletonCard(),
+            )
           : _error != null
               ? Center(child: Text('Error: $_error'))
               : _classes.isEmpty
@@ -131,9 +141,10 @@ class _MyDayScreenState extends State<MyDayScreen> {
                       ),
                     )
                   : RefreshIndicator(
-                      onRefresh: _fetchMyDay,
+                      onRefresh: () => _fetchMyDay(forceRefresh: true),
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _classes.length,
                         itemBuilder: (context, index) {
                           final classData = _classes[index] as Map<String, dynamic>;

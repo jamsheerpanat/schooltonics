@@ -24,7 +24,13 @@ class ApiService {
     await prefs.remove('auth_token');
   }
 
-  Future<dynamic> get(String endpoint) async {
+  final Map<String, dynamic> _memoryCache = {};
+
+  Future<dynamic> get(String endpoint, {bool useCache = false, bool forceRefresh = false}) async {
+    if (useCache && !forceRefresh && _memoryCache.containsKey(endpoint)) {
+      return _memoryCache[endpoint];
+    }
+
     final token = await getToken();
     
     try {
@@ -37,7 +43,13 @@ class ApiService {
         },
       );
 
-      return _handleResponse(response);
+      final data = _handleResponse(response);
+      
+      if (useCache) {
+        _memoryCache[endpoint] = data;
+      }
+
+      return data;
     } catch (e) {
       throw Exception('Network Error: $e');
     }

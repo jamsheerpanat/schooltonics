@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../../services/api_service.dart';
 import 'attendance_screen.dart';
 
@@ -23,19 +24,21 @@ class _TodayScreenState extends State<TodayScreen> {
     _fetchData();
   }
 
-  Future<void> _fetchData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _fetchData({bool forceRefresh = false}) async {
+    if (_timetable.isEmpty && _todayAttendance == null) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
 
     try {
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       
       // Fetch both timetable and attendance
       final results = await Future.wait([
-        _apiService.get('/student/today?date=$date'),
-        _apiService.get('/student/attendance?from=$date&to=$date'),
+        _apiService.get('/student/today?date=$date', useCache: true, forceRefresh: forceRefresh),
+        _apiService.get('/student/attendance?from=$date&to=$date', useCache: true, forceRefresh: forceRefresh),
       ]);
 
       setState(() {
@@ -49,6 +52,7 @@ class _TodayScreenState extends State<TodayScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -64,12 +68,27 @@ class _TodayScreenState extends State<TodayScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchData,
+            onPressed: () => _fetchData(forceRefresh: true),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                   const SkeletonLoader(height: 80, borderRadius: 12),
+                   const SizedBox(height: 20),
+                   Expanded(
+                     child: ListView.separated(
+                        itemCount: 5,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (_, __) => const SkeletonListTile(),
+                     ),
+                   ),
+                ],
+              ),
+            )
           : _error != null
               ? Center(child: Text('Error: $_error'))
               : Column(
@@ -157,7 +176,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Widget _buildTimetable() {
     return RefreshIndicator(
-      onRefresh: _fetchData,
+      onRefresh: () => _fetchData(forceRefresh: true),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _timetable.length,
