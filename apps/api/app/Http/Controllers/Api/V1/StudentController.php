@@ -85,6 +85,18 @@ class StudentController extends Controller
             return response()->json(['message' => 'Student record not found.'], 404);
         }
 
+        $dateStr = $request->query('date', now()->toDateString());
+
+        $cacheKey = "student_today_{$student->id}_{$dateStr}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($student, $dateStr, $request) {
+            \Illuminate\Support\Facades\Log::debug("Cache miss: {$cacheKey}");
+            return $this->fetchToday($student, $dateStr, $request);
+        });
+    }
+
+    protected function fetchToday($student, $dateStr, $request)
+    {
         $activeYear = AcademicYear::where('is_active', true)->first();
         if (!$activeYear) {
             return response()->json(['message' => 'No active academic year.'], 422);
@@ -99,7 +111,6 @@ class StudentController extends Controller
             return response()->json(['message' => 'Student not enrolled in any section.'], 422);
         }
 
-        $dateStr = $request->query('date', now()->toDateString());
         $requestedDate = \Carbon\Carbon::parse($dateStr);
 
         $dayMap = [

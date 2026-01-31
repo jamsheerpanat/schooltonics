@@ -25,18 +25,16 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
                 $message = $e->getMessage();
-                
+
                 // Friendly generic message for 500s unless debug enabled
                 if ($status === 500 && !config('app.debug')) {
                     $message = 'An unexpected error occurred. Please try again later.';
                 }
 
-                if ($e instanceof \Illuminate\Support\Facades\RateLimiter::class) { // Should check for ThrottleRequestsException
-                     // ThrottleRequestsException is hard to check by class name without import, usually returns 429 status code
-                }
+
 
                 // If validation exception, Laravel handles it, but let's ensure structure
-                
+    
                 return response()->json([
                     'success' => false,
                     'message' => $message,

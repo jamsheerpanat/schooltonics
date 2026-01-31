@@ -22,6 +22,18 @@ class TeacherController extends Controller
     public function getMyDay(Request $request)
     {
         $dateStr = $request->query('date', Carbon::today()->toDateString());
+        $user = $request->user();
+
+        $cacheKey = "teacher_day_{$user->id}_{$dateStr}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($request, $dateStr, $user) {
+            \Illuminate\Support\Facades\Log::debug('Cache miss: ' . $cacheKey);
+            return $this->fetchMyDay($request, $dateStr, $user);
+        });
+    }
+
+    protected function fetchMyDay(Request $request, $dateStr, $user)
+    {
         $requestedDate = Carbon::parse($dateStr);
         $dayOfWeek = $this->timeResolver->getDayOfWeek($requestedDate);
 
@@ -34,7 +46,7 @@ class TeacherController extends Controller
             return response()->json(['message' => 'No active academic year.'], 422);
         }
 
-        $teacher = $request->user();
+        $teacher = $user;
 
         // 1. Fetch Timetable
         $timetable = TimetableEntry::with(['section.grade', 'subject', 'period'])

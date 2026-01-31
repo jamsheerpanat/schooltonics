@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::prefix('v1')->group(function () {
     Route::get('/health', function () {
-        return response()->json([
-            'status' => 'ok',
-            'app' => 'OctoSchoolEngine',
-            'version' => 'v1',
-        ]);
+        return \Illuminate\Support\Facades\Cache::remember('system_health', 30, function () {
+            // Check DB connection in real app
+            return response()->json([
+                'status' => 'ok',
+                'app' => 'OctoSchoolEngine',
+                'version' => 'v1',
+            ]);
+        });
     });
 
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1');

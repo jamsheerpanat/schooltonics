@@ -105,6 +105,14 @@ class AttendanceService
         // Send notifications for absent students
         $this->notifyAbsentees($session);
 
+        // Cache Invalidation
+        $teacherCacheKey = "teacher_day_{$teacherId}_" . now()->toDateString();
+        \Illuminate\Support\Facades\Cache::forget($teacherCacheKey);
+        // Note: Students also have caches but invalidating strictly for attendance status change 
+        // to a specific session is tedious without Tags. 
+        // Reliance on 60s TTL is sufficient for students.
+        // Teacher needs faster update to confirm submission status.
+
         return $session;
     }
 
