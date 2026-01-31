@@ -21,13 +21,32 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
   bool _isSubmitted = false;
   bool _isSubmitting = false;
 
+  // Notes State
+  final TextEditingController _notesController = TextEditingController();
+  bool _isPostingNotes = false;
+  Map<String, dynamic>? _existingNotes;
+
+  // Homework State
+  final TextEditingController _homeworkTitleController = TextEditingController();
+  final TextEditingController _homeworkInstructionsController = TextEditingController();
+  DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
+  bool _isPostingHomework = false;
+  Map<String, dynamic>? _existingHomework;
+
+  // Recognition State
+  int? _selectedStudentId;
+  String? _selectedBadge;
+  final TextEditingController _recognitionCommentController = TextEditingController();
+  bool _isPostingRecognition = false;
+  List<dynamic> _currentSessionRecognitions = [];
+
   @override
   void initState() {
     super.initState();
-    _initializeAttendance();
+    _initializeData();
   }
 
-  Future<void> _initializeAttendance() async {
+  Future<void> _initializeData() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -35,15 +54,38 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
 
     try {
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final response = await _apiService.post('/attendance/sessions', {
+      
+      // Initialize Session & Roster
+      final sessionResponse = await _apiService.post('/attendance/sessions', {
         'section_id': widget.classData['section']['id'],
         'date': date,
       });
 
+      _sessionId = sessionResponse['session']['id'];
+      _roster = sessionResponse['roster'] as List<dynamic>;
+      _isSubmitted = sessionResponse['session']['status'] == 'submitted' || sessionResponse['session']['status'] == 'locked';
+
+      if (_sessionId != null) {
+        // Fetch existing Notes/Homework/Recognitions if available
+        // Note: These might fail if endpoints aren't perfectly aligned, so wrap in try-catch
+        try {
+          _existingNotes = await _apiService.get('/class-sessions/$_sessionId/notes');
+          if (_existingNotes != null) {
+            _notesController.text = _existingNotes!['content'] ?? '';
+          }
+        } catch (_) {}
+
+        try {
+          _existingHomework = await _apiService.get('/class-sessions/$_sessionId/homework');
+          if (_existingHomework != null) {
+            _homeworkTitleController.text = _existingHomework!['title'] ?? '';
+            _homeworkInstructionsController.text = _existingHomework!['instructions'] ?? '';
+            _dueDate = DateTime.parse(_existingHomework!['due_date']);
+          }
+        } catch (_) {}
+      }
+
       setState(() {
-        _sessionId = response['session']['id'];
-        _roster = response['roster'] as List<dynamic>;
-        _isSubmitted = response['session']['status'] == 'submitted' || response['session']['status'] == 'locked';
         _isLoading = false;
       });
     } catch (e) {
@@ -81,6 +123,95 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
       );
     } catch (e) {
       setState(() => _isSubmitting = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _postNotes() async {
+    if (_sessionId == null || _notesController.text.isEmpty) return;
+    setState(() => _isPostingNotes = true);
+
+    try {
+      final response = await _apiService.post('/class-sessions/$_sessionId/notes', {
+        'content': _notesController.text,
+        'attachments': [], // Placeholder for now
+      });
+
+      setState(() {
+        _existingNotes = response;
+        _isPostingNotes = false;
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notes posted!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      setState(() => _isPostingNotes = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _postHomework() async {
+    if (_sessionId == null || _homeworkTitleController.text.isEmpty) return;
+    setState(() => _isPostingHomework = true);
+
+    try {
+      final response = await _apiService.post('/class-sessions/$_sessionId/homework', {
+        'title': _homeworkTitleController.text,
+        'instructions': _homeworkInstructionsController.text,
+        'due_date': DateFormat('yyyy-MM-dd').format(_dueDate),
+        'attachments': [], 
+      });
+
+      setState(() {
+        _existingHomework = response;
+        _isPostingHomework = false;
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Homework assigned!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      setState(() => _isPostingHomework = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _postRecognition() async {
+    if (_sessionId == null || _selectedStudentId == null || _selectedBadge == null) return;
+    setState(() => _isPostingRecognition = true);
+
+    try {
+      final response = await _apiService.post('/class-sessions/$_sessionId/recognition', {
+        'student_id': _selectedStudentId,
+        'badge_code': _selectedBadge,
+        'comment': _recognitionCommentController.text,
+      });
+
+      setState(() {
+        _currentSessionRecognitions.insert(0, response);
+        _isPostingRecognition = false;
+        _selectedBadge = null;
+        _recognitionCommentController.clear();
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Recognition sent! 🌟'), backgroundColor: Colors.orange),
+      );
+    } catch (e) {
+      setState(() => _isPostingRecognition = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
@@ -152,18 +283,18 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
               isScrollable: true,
               tabs: [
                 Tab(text: 'Attendance'),
-                Tab(text: 'Notes (P4)'),
-                Tab(text: 'Homework (P4)'),
-                Tab(text: 'Recognition (P4)'),
+                Tab(text: 'Notes'),
+                Tab(text: 'Homework'),
+                Tab(text: 'Recognition'),
               ],
             ),
           ),
           body: TabBarView(
             children: [
               _buildAttendanceTab(),
-              const Center(child: Text('Notes - Locked for Phase 4')),
-              const Center(child: Text('Homework - Phase 4')),
-              const Center(child: Text('Recognition - Phase 4')),
+              _buildNotesTab(),
+              _buildHomeworkTab(),
+              _buildRecognitionTab(),
             ],
           ),
           bottomNavigationBar: _buildBottomBar(),
@@ -184,7 +315,7 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
           children: [
             Text('Error: $_error', style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _initializeAttendance, child: const Text('Retry')),
+            ElevatedButton(onPressed: _initializeData, child: const Text('Retry')),
           ],
         ),
       );
@@ -246,11 +377,222 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
     );
   }
 
+  Widget _buildNotesTab() {
+    final bool isPosted = _existingNotes != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Class Summary / Notes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 8),
+          const Text('Share important highlights or study materials with students.', style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _notesController,
+            enabled: !isPosted,
+            maxLines: 8,
+            decoration: InputDecoration(
+              hintText: 'Enter your class notes here...',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: isPosted ? Colors.grey[100] : Colors.blue[50]?.withOpacity(0.1),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (!isPosted)
+            ElevatedButton.icon(
+              onPressed: _isPostingNotes ? null : _postNotes,
+              icon: _isPostingNotes ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send),
+              label: const Text('POST NOTES'),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+            )
+          else
+            const Card(
+              color: Colors.green,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Notes are visible to students.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeworkTab() {
+    final bool isPosted = _existingHomework != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Assign Homework', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _homeworkTitleController,
+            enabled: !isPosted,
+            decoration: const InputDecoration(
+              labelText: 'Homework Title',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _homeworkInstructionsController,
+            enabled: !isPosted,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Instructions',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            title: const Text('Due Date'),
+            subtitle: Text(DateFormat('EEEE, MMM dd, yyyy').format(_dueDate)),
+            trailing: const Icon(Icons.calendar_today),
+            onTap: isPosted ? null : () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _dueDate,
+                firstDate: DateTime.now(),
+                lastDate: DateTime.now().add(const Duration(days: 365)),
+              );
+              if (picked != null) setState(() => _dueDate = picked);
+            },
+          ),
+          const SizedBox(height: 16),
+          if (!isPosted)
+            ElevatedButton(
+              onPressed: _isPostingHomework ? null : _postHomework,
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+              child: _isPostingHomework ? const CircularProgressIndicator() : const Text('ASSIGN HOMEWORK'),
+            )
+          else
+            const Card(
+              color: Colors.blue,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.assignment_turned_in, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Homework has been assigned.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecognitionTab() {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Spark Joy! ✨', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text('Give a badge to a student who stood out today.', style: TextStyle(color: Colors.grey)),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: _selectedStudentId,
+                  decoration: const InputDecoration(labelText: 'Select Student', border: OutlineInputBorder()),
+                  items: _roster.map((s) => DropdownMenuItem<int>(
+                    value: s['student_id'],
+                    child: Text(s['student_name']),
+                  )).toList(),
+                  onChanged: (v) => setState(() => _selectedStudentId = v),
+                ),
+                const SizedBox(height: 16),
+                const Text('Select Badge', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildBadgeOption('PARTICIPATION', Icons.star, Colors.orange),
+                    _buildBadgeOption('DISCIPLINE', Icons.shield, Colors.blue),
+                    _buildBadgeOption('IMPROVEMENT', Icons.trending_up, Colors.green),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _recognitionCommentController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Comment (Optional)',
+                    hintText: 'e.g. "Excellent work in the lab!"',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _isPostingRecognition ? null : _postRecognition,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: _isPostingRecognition ? const CircularProgressIndicator(color: Colors.white) : const Text('GIVE RECOGNITION'),
+                ),
+                if (_currentSessionRecognitions.isNotEmpty) ...[
+                  const Divider(height: 32),
+                  const Text('Given Today', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ..._currentSessionRecognitions.map((r) => ListTile(
+                    leading: const Icon(Icons.emoji_events, color: Colors.orange),
+                    title: Text(r['badge_code']),
+                    subtitle: Text('Student ID: ${r['student_id']}'),
+                  )).toList(),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadgeOption(String code, IconData icon, Color color) {
+    bool isSelected = _selectedBadge == code;
+    return InkWell(
+      onTap: () => setState(() => _selectedBadge = code),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected ? color : color.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 2),
+            ),
+            child: Icon(icon, color: isSelected ? Colors.white : color),
+          ),
+          const SizedBox(height: 4),
+          Text(code, style: TextStyle(fontSize: 10, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+        ],
+      ),
+    );
+  }
+
   Widget? _buildBottomBar() {
     if (_isLoading || _error != null || _isSubmitted) return null;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -261,21 +603,35 @@ class _ClassSessionScreenState extends State<ClassSessionScreen> {
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: _isSubmitting ? null : _submitAttendance,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: _isSubmitting
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Text('SUBMIT ATTENDANCE', style: TextStyle(fontWeight: FontWeight.bold)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_roster.where((s) => s['status'] == 'absent').isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Reminder: Specify reasons for absent students.',
+                style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : _submitAttendance,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: _isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('SUBMIT ATTENDANCE', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
