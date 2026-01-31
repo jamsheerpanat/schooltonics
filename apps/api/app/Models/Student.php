@@ -12,6 +12,7 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'student_no',
         'name_en',
         'dob',
@@ -22,6 +23,11 @@ class Student extends Model
     protected $casts = [
         'dob' => 'date',
     ];
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     protected static function booted()
     {

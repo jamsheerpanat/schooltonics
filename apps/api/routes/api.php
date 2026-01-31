@@ -52,6 +52,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Student Routes
     Route::prefix('student')->middleware('role:student,parent,principal')->group(function () {
+        Route::get('/today', [\App\Http\Controllers\Api\V1\StudentController::class, 'getToday']);
         Route::get('/profile', function () {
             return response()->json(['message' => 'Student Profile - Not Implemented'], 501);
         });

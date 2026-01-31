@@ -73,4 +73,76 @@ class StudentController extends Controller
 
         return response()->json($enrollment, 201);
     }
+    public function getToday(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role !== 'student') {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['message' => 'Student record not found.'], 404);
+        }
+
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        if (!$activeYear) {
+            return response()->json(['message' => 'No active academic year.'], 422);
+        }
+
+        $enrollment = Enrollment::where('student_id', $student->id)
+            ->where('academic_year_id', $activeYear->id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$enrollment) {
+            return response()->json(['message' => 'Student not enrolled in any section.'], 422);
+        }
+
+        $dateStr = $request->query('date', now()->toDateString());
+        $requestedDate = \Carbon\Carbon::parse($dateStr);
+
+        $dayMap = [
+            'mon' => 'mon',
+            'tue' => 'tue',
+            'wed' => 'wed',
+            'thu' => 'thu',
+            'sun' => 'sun'
+        ];
+        $dayOfWeek = $dayMap[strtolower($requestedDate->format('D'))] ?? null;
+
+        if (!$dayOfWeek) {
+            return response()->json([]);
+        }
+
+        $timetable = \App\Models\TimetableEntry::with(['subject', 'period', 'teacher'])
+            ->where('section_id', $enrollment->section_id)
+            ->where('academic_year_id', $activeYear->id)
+            ->where('day_of_week', $dayOfWeek)
+            ->get();
+
+        $sessions = \App\Models\ClassSession::where('section_id', $enrollment->section_id)
+            ->whereDate('date', $requestedDate->toDateString())
+            ->get()
+            ->keyBy(function ($item) {
+                return "{$item->subject_id}-{$item->period_id}";
+            });
+
+        $result = $timetable->map(function ($entry) use ($sessions) {
+            $sessionKey = "{$entry->subject_id}-{$entry->period_id}";
+            $session = $sessions->get($sessionKey);
+
+            return [
+                'subject' => $entry->subject->name,
+                'subject_code' => $entry->subject->code,
+                'teacher' => $entry->teacher->name,
+                'period' => $entry->period->name,
+                'start_time' => $entry->period->start_time,
+                'end_time' => $entry->period->end_time,
+                'is_session_open' => $session ? (bool) $session->opened_at : false,
+            ];
+        })->sortBy('start_time')->values();
+
+        return response()->json($result);
+    }
 }

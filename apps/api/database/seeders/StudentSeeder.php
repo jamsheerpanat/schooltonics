@@ -23,12 +23,15 @@ class StudentSeeder extends Seeder
             return;
         }
 
+        $studentUser = \App\Models\User::where('email', 'student@octoschool.com')->first();
+
         $students = [
             [
                 'name_en' => 'John Doe',
                 'dob' => '2018-05-15',
                 'gender' => 'male',
-                'section' => $sectionA
+                'section' => $sectionA,
+                'user_id' => $studentUser ? $studentUser->id : null,
             ],
             [
                 'name_en' => 'Jane Smith',
@@ -50,6 +53,7 @@ class StudentSeeder extends Seeder
                 [
                     'dob' => $data['dob'],
                     'gender' => $data['gender'],
+                    'user_id' => $data['user_id'] ?? null,
                 ]
             );
 
