@@ -44,6 +44,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Teacher Routes
     Route::prefix('teacher')->middleware('role:teacher,principal')->group(function () {
+        Route::get('/my-day', [\App\Http\Controllers\Api\V1\TeacherController::class, 'getMyDay']);
         Route::get('/classes', function () {
             return response()->json(['message' => 'Teacher Classes - Not Implemented'], 501);
         });
