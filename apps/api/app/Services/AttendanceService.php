@@ -185,7 +185,7 @@ class AttendanceService
                 $record = $session->records->firstWhere('student_id', $enrollment->student_id);
                 return [
                     'student_id' => $enrollment->student_id,
-                    'student_name' => $enrollment->student->name_en,
+                    'name_en' => $enrollment->student->name_en,
                     'roll_no' => $enrollment->roll_no,
                     'status' => $record ? $record->status : 'present',
                     'reason' => $record ? $record->reason : null,

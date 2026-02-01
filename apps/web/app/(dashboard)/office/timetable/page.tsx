@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 
 export default function OfficeTimetablePage() {
@@ -27,9 +28,16 @@ export default function OfficeTimetablePage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight">Timetable Management</h2>
-                <p className="text-muted-foreground">Select a section to manage its timetable.</p>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Timetable Management</h2>
+                    <p className="text-muted-foreground">Select a section to manage its timetable.</p>
+                </div>
+                <Link href="/office/timetable/periods">
+                    <Button variant="outline">
+                        Manage Periods
+                    </Button>
+                </Link>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -40,7 +48,7 @@ export default function OfficeTimetablePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-2">
-                                {grade.sections.map((section: any) => (
+                                {grade.sections?.map((section: any) => (
                                     <Link
                                         key={section.id}
                                         href={`/office/timetable/section/${section.id}`}
@@ -49,6 +57,9 @@ export default function OfficeTimetablePage() {
                                         Section {section.name}
                                     </Link>
                                 ))}
+                                {(!grade.sections || grade.sections.length === 0) && (
+                                    <p className="text-sm text-muted-foreground italic">No sections defined</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

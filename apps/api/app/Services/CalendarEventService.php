@@ -37,8 +37,8 @@ class CalendarEventService
 
         // Trigger Push Notification
         $this->notifyAudience(
-            $event->visibility, 
-            "New Calendar Event", 
+            $event->visibility,
+            "New Calendar Event",
             "{$event->title} on " . $event->start_date->format('M d')
         );
 
@@ -62,7 +62,6 @@ class CalendarEventService
         foreach ($users as $user) {
             $pushService->sendToUser($user, $title, $body);
         }
-    }
     }
 
     /**

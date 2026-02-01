@@ -14,7 +14,11 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with('activeEnrollment.section.grade')->get();
+        $students = Student::with([
+            'enrollments.section.grade',
+            'enrollments.academicYear'
+        ])->get();
+
         return response()->json($students);
     }
 
@@ -33,7 +37,12 @@ class StudentController extends Controller
 
     public function show($id)
     {
-        $student = Student::with(['enrollments.section.grade', 'enrollments.academicYear'])->findOrFail($id);
+        $student = Student::with([
+            'enrollments.section.grade',
+            'enrollments.academicYear',
+            'guardians'
+        ])->findOrFail($id);
+
         return response()->json($student);
     }
 

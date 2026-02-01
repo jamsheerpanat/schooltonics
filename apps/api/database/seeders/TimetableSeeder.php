@@ -43,40 +43,42 @@ class TimetableSeeder extends Seeder
         $subjectEng = Subject::where('code', 'ENG')->first();
 
         if ($section && $teacher && $subjectMath && $subjectEng) {
-            $day = 'sun';
+            $days = ['sun', 'mon', 'tue', 'wed', 'thu'];
 
-            // P1: Math
-            TimetableEntry::updateOrCreate([
-                'academic_year_id' => $activeYear->id,
-                'section_id' => $section->id,
-                'day_of_week' => $day,
-                'period_id' => $periodModels[0]->id,
-            ], [
-                'subject_id' => $subjectMath->id,
-                'teacher_user_id' => $teacher->id,
-            ]);
+            foreach ($days as $day) {
+                // P1: alternating Math and English
+                TimetableEntry::updateOrCreate([
+                    'academic_year_id' => $activeYear->id,
+                    'section_id' => $section->id,
+                    'day_of_week' => $day,
+                    'period_id' => $periodModels[0]->id,
+                ], [
+                    'subject_id' => $day === 'mon' || $day === 'wed' ? $subjectEng->id : $subjectMath->id,
+                    'teacher_user_id' => $teacher->id,
+                ]);
 
-            // P2: English
-            TimetableEntry::updateOrCreate([
-                'academic_year_id' => $activeYear->id,
-                'section_id' => $section->id,
-                'day_of_week' => $day,
-                'period_id' => $periodModels[1]->id,
-            ], [
-                'subject_id' => $subjectEng->id,
-                'teacher_user_id' => $teacher->id,
-            ]);
+                // P2:
+                TimetableEntry::updateOrCreate([
+                    'academic_year_id' => $activeYear->id,
+                    'section_id' => $section->id,
+                    'day_of_week' => $day,
+                    'period_id' => $periodModels[1]->id,
+                ], [
+                    'subject_id' => $day === 'mon' || $day === 'wed' ? $subjectMath->id : $subjectEng->id,
+                    'teacher_user_id' => $teacher->id,
+                ]);
 
-            // P3: Math again
-            TimetableEntry::updateOrCreate([
-                'academic_year_id' => $activeYear->id,
-                'section_id' => $section->id,
-                'day_of_week' => $day,
-                'period_id' => $periodModels[3]->id,
-            ], [
-                'subject_id' => $subjectMath->id,
-                'teacher_user_id' => $teacher->id,
-            ]);
+                // P3:
+                TimetableEntry::updateOrCreate([
+                    'academic_year_id' => $activeYear->id,
+                    'section_id' => $section->id,
+                    'day_of_week' => $day,
+                    'period_id' => $periodModels[3]->id,
+                ], [
+                    'subject_id' => $subjectMath->id,
+                    'teacher_user_id' => $teacher->id,
+                ]);
+            }
         }
     }
 }

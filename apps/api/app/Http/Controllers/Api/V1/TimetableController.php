@@ -112,4 +112,49 @@ class TimetableController extends Controller
 
         return response()->json($timetable);
     }
+
+    public function getMyTimetable(Request $request)
+    {
+        $user = $request->user();
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        if (!$activeYear) {
+            return response()->json(['message' => 'No active academic year found.'], 422);
+        }
+
+        if ($user->role === 'student') {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            if (!$student)
+                return response()->json(['message' => 'Student record not found'], 404);
+
+            $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('academic_year_id', $activeYear->id)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$enrollment)
+                return response()->json(['message' => 'Not enrolled in any section'], 422);
+
+            $timetable = TimetableEntry::with(['subject', 'teacher', 'period'])
+                ->where('section_id', $enrollment->section_id)
+                ->where('academic_year_id', $activeYear->id)
+                ->get()
+                ->groupBy('day_of_week');
+
+            return response()->json($timetable);
+        }
+
+        if ($user->role === 'teacher') {
+            return $this->getByTeacher($user->id);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    public function destroy($id)
+    {
+        $entry = TimetableEntry::findOrFail($id);
+        $entry->delete();
+        return response()->json(['message' => 'Entry deleted successfully']);
+    }
 }

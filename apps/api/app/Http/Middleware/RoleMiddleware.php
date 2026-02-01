@@ -20,13 +20,25 @@ class RoleMiddleware
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        if (!in_array($request->user()->role, $roles)) {
+        // Handle both ['role1', 'role2'] and ['role1,role2']
+        $flatRoles = [];
+        foreach ($roles as $role) {
+            if (str_contains($role, ',')) {
+                $flatRoles = array_merge($flatRoles, explode(',', $role));
+            } else {
+                $flatRoles[] = $role;
+            }
+        }
+
+        if (!in_array($request->user()->role, $flatRoles)) {
             return response()->json([
                 'message' => 'Forbidden: You do not have the required role.',
-                'required_roles' => $roles,
+                'required_roles' => $flatRoles,
                 'your_role' => $request->user()->role
             ], 403);
         }
+
+
 
         return $next($request);
     }

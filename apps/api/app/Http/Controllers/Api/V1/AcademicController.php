@@ -90,13 +90,15 @@ class AcademicController extends Controller
 
     public function getStructure()
     {
-        $academicYear = AcademicYear::where('is_active', true)->first();
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
         $grades = Grade::with('sections')->orderBy('sort_order')->get();
+        $sections = Section::with('grade')->get();
         $subjects = Subject::all();
 
         return response()->json([
-            'active_year' => $academicYear,
+            'academic_years' => $academicYears,
             'grades' => $grades,
+            'sections' => $sections,
             'subjects' => $subjects,
         ]);
     }

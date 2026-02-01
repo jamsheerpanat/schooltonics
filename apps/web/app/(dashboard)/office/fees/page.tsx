@@ -31,9 +31,11 @@ export default function OfficeFeesPage() {
     };
 
     const filteredStudents = students.filter(student =>
-        student.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
+        (student.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (student.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (student.admission_number?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (student.name_en?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (student.student_no?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
     );
 
     return (
@@ -69,27 +71,35 @@ export default function OfficeFeesPage() {
                             <div className="text-center py-4 text-muted-foreground">No students found matching your criteria.</div>
                         ) : (
                             <div className="grid gap-2">
-                                {filteredStudents.map((student) => (
-                                    <div
-                                        key={student.id}
-                                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
-                                                {student.first_name[0]}{student.last_name[0]}
+                                {filteredStudents.map((student) => {
+                                    // Handle different field name variations
+                                    const firstName = student.first_name || student.name_en?.split(' ')[0] || 'Student';
+                                    const lastName = student.last_name || student.name_en?.split(' ').slice(1).join(' ') || '';
+                                    const studentId = student.admission_number || student.student_no || 'N/A';
+                                    const initials = `${firstName[0] || 'S'}${lastName[0] || ''}`;
+
+                                    return (
+                                        <div
+                                            key={student.id}
+                                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
+                                                    {initials}
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium">{firstName} {lastName}</div>
+                                                    <div className="text-sm text-muted-foreground">ID: {studentId}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="font-medium">{student.first_name} {student.last_name}</div>
-                                                <div className="text-sm text-muted-foreground">ID: {student.admission_number}</div>
-                                            </div>
+                                            <Link href={`/office/fees/student/${student.id}`}>
+                                                <Button variant="outline" size="sm">
+                                                    View Dues <ChevronRight className="ml-2 h-4 w-4" />
+                                                </Button>
+                                            </Link>
                                         </div>
-                                        <Link href={`/office/fees/student/${student.id}`}>
-                                            <Button variant="outline" size="sm">
-                                                View Dues <ChevronRight className="ml-2 h-4 w-4" />
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

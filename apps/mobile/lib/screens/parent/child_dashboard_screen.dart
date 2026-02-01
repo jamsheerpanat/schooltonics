@@ -29,15 +29,12 @@ class _ChildDashboardScreenState extends State<ChildDashboardScreen> {
   }
 
   Future<void> _fetchDashboardData() async {
-    // ... same as before ...
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      // ... 
-      final now = DateTime.now();
       final from = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 7)));
       final to = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 7)));
 

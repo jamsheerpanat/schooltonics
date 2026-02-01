@@ -14,12 +14,25 @@ import Link from 'next/link';
 import { HealthDashboardSkeleton } from "@/components/skeletons/HealthDashboardSkeleton";
 
 interface SectionAttendance {
-// ...
+    section_id: number;
+    section_name: string;
+    total_students: number;
+    present_count: number;
+    attendance_percentage: number;
+    status: 'submitted' | 'draft' | 'no_session' | 'locked';
+    submitted_at: string | null;
+    submitted_by: string | null;
+}
+
 export default function PrincipalHealthPage() {
     const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-    // ...
+
     const { data: summary, isLoading } = useQuery<SectionAttendance[]>({
-        // ...
+        queryKey: ['principal-health', date],
+        queryFn: async () => {
+            const res = await api.get(`/reports/attendance/daily?date=${date}`);
+            return res.data.data;
+        }
     });
 
     const stats = {

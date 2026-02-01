@@ -62,7 +62,6 @@ class AnnouncementService
             $pushService->sendToUser($user, $title, $body);
         }
     }
-    }
 
     /**
      * Get announcements for a specific user based on their role.

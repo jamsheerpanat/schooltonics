@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 export default function SectionTimetablePage({ params }: { params: Promise<{ id: string }> }) {
     const { id: sectionId } = use(params);
@@ -168,11 +169,28 @@ export default function SectionTimetablePage({ params }: { params: Promise<{ id:
                                         {days.map(day => {
                                             const entry = timetable[day]?.find((e: any) => e.period_id === period.id);
                                             return (
-                                                <td key={day} className="border p-2 text-center align-middle">
+                                                <td key={day} className="border p-2 text-center align-middle group relative">
                                                     {entry ? (
-                                                        <div className="bg-blue-50 p-2 rounded border border-blue-100">
-                                                            <p className="font-bold text-sm">{entry.subject.name}</p>
-                                                            <p className="text-[10px] text-muted-foreground">{entry.teacher.name}</p>
+                                                        <div className="bg-blue-50 p-2 rounded border border-blue-100 h-full flex flex-col justify-center">
+                                                            <p className="font-bold text-sm leading-tight">{entry.subject.name}</p>
+                                                            <p className="text-[10px] text-muted-foreground mt-1">{entry.teacher.name}</p>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (confirm('Delete this entry?')) {
+                                                                        try {
+                                                                            await api.delete(`/timetable-entries/${entry.id}`);
+                                                                            toast.success("Entry removed");
+                                                                            const response = await api.get(`/timetable/section/${sectionId}`);
+                                                                            setTimetable(response.data);
+                                                                        } catch (error) {
+                                                                            toast.error("Failed to remove entry");
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                className="absolute top-1 right-1 p-1 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                            </button>
                                                         </div>
                                                     ) : (
                                                         <span className="text-muted-foreground text-xs italic">-</span>

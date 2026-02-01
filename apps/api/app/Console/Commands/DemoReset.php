@@ -55,6 +55,7 @@ class DemoReset extends Command
             ['Role', 'Email', 'Password'],
             [
                 ['Principal', 'principal@octoschool.com', 'password'],
+                ['Office', 'office@octoschool.com', 'password'],
                 ['Teacher', 'teacher1@octoschool.com', 'password'],
                 ['Student', 'student1@octoschool.com', 'password'],
                 ['Parent', 'parent1@octoschool.com', 'password'],

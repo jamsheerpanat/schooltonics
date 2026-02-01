@@ -6,6 +6,8 @@ use App\Models\AcademicYear;
 use App\Models\Announcement;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
+use App\Models\CalendarEvent;
+use App\Models\FeeItem;
 use App\Models\Grade;
 use App\Models\Section;
 use App\Models\Student;
@@ -28,6 +30,10 @@ class DemoSeeder extends Seeder
             ['email' => 'principal@octoschool.com'],
             ['name' => 'Principal Skinner', 'password' => Hash::make('password'), 'role' => 'principal']
         );
+        $office = User::updateOrCreate(
+            ['email' => 'office@octoschool.com'],
+            ['name' => 'Office Admin', 'password' => Hash::make('password'), 'role' => 'office']
+        );
         $teacher = User::updateOrCreate(
             ['email' => 'teacher1@octoschool.com'],
             ['name' => 'Edna Krabappel', 'password' => Hash::make('password'), 'role' => 'teacher']
@@ -38,7 +44,7 @@ class DemoSeeder extends Seeder
         );
         $parentUser = User::updateOrCreate(
             ['email' => 'parent1@octoschool.com'],
-            ['name' => 'Homer Simpson', 'password' => Hash::make('password'), 'role' => 'guardian']
+            ['name' => 'Homer Simpson', 'password' => Hash::make('password'), 'role' => 'parent']
         );
 
         // 2. Academic Year
@@ -58,14 +64,18 @@ class DemoSeeder extends Seeder
         $math = Subject::updateOrCreate(['code' => 'MATH'], ['name' => 'Mathematics']);
         $history = Subject::updateOrCreate(['code' => 'HIST'], ['name' => 'History']);
 
+        // 4b. Fee Items
+        $tuitionFee = FeeItem::updateOrCreate(['name' => 'Tuition Fee'], ['category' => 'tuition', 'default_amount' => 1500.00]);
+
         // 5. Assignments
-        TeacherAssignment::create([
-            'academic_year_id' => $year->id,
-            'teacher_user_id' => $teacher->id, // Use User ID for now as per previous seeders? Wait, let me check TeacherAssignment model or seeder.
-            // TeacherAssignmentSeeder says: 'teacher_user_id' => $teacher->id
-            'section_id' => $sectionA->id,
-            'subject_id' => $math->id,
-        ]);
+        TeacherAssignment::updateOrCreate(
+            [
+                'teacher_user_id' => $teacher->id,
+                'academic_year_id' => $year->id,
+                'section_id' => $sectionA->id,
+                'subject_id' => $math->id,
+            ]
+        );
 
         // 6. Students (10 students)
         $students = [];
@@ -99,7 +109,7 @@ class DemoSeeder extends Seeder
             // Assign Fees
             StudentDue::create([
                 'student_id' => $student->id,
-                'title' => 'Term 1 Tuition',
+                'fee_item_id' => $tuitionFee->id,
                 'amount' => 1500.00,
                 'due_date' => '2025-09-01',
                 'status' => $index === 0 ? 'unpaid' : ($index === 1 ? 'paid' : 'unpaid'), // Bart unpaid, Student 2 paid
@@ -109,10 +119,29 @@ class DemoSeeder extends Seeder
         // 7. Announcement
         Announcement::create([
             'title' => 'School Closed Tomorrow',
-            'content' => 'Due to heavy snow, the school will be closed.',
-            'target_role' => 'all',
-            'published_at' => now(),
-            'author_id' => $principal->id,
+            'body' => 'Due to heavy snow, the school will be closed.',
+            'audience' => 'all',
+            'publish_at' => now(),
+            'created_by_user_id' => $principal->id,
+        ]);
+
+        // 7b. Calendar Events
+        CalendarEvent::create([
+            'title' => 'Term 1 Finals',
+            'description' => 'Final exams for the first term.',
+            'start_date' => now()->addDays(5)->format('Y-m-d'),
+            'end_date' => now()->addDays(10)->format('Y-m-d'),
+            'visibility' => 'all',
+            'created_by_user_id' => $principal->id,
+        ]);
+
+        CalendarEvent::create([
+            'title' => 'Teacher Planning Day',
+            'description' => 'No school for students.',
+            'start_date' => now()->subDays(2)->format('Y-m-d'),
+            'end_date' => now()->subDays(2)->format('Y-m-d'),
+            'visibility' => 'teacher',
+            'created_by_user_id' => $principal->id,
         ]);
 
         // 8. Daily Flow (Attendance)

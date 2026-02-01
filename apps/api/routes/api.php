@@ -46,11 +46,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     // Teacher Routes
-    Route::prefix('teacher')->middleware('role:teacher,principal')->group(function () {
+    Route::prefix('teacher')->middleware('role:teacher,principal,office')->group(function () {
         Route::get('/my-day', [\App\Http\Controllers\Api\V1\TeacherController::class, 'getMyDay']);
-        Route::get('/classes', function () {
-            return response()->json(['message' => 'Teacher Classes - Not Implemented'], 501);
-        });
     });
 
     // Student Routes
@@ -94,24 +91,27 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'index']);
         Route::post('/teacher-assignments', [\App\Http\Controllers\Api\V1\TeacherAssignmentController::class, 'store']);
 
-        Route::get('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'indexPeriods']);
         Route::post('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storePeriod']);
         Route::post('/timetable-entries', [\App\Http\Controllers\Api\V1\TimetableController::class, 'storeTimetableEntry']);
+        Route::delete('/timetable-entries/{id}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'destroy']);
     });
+
+    Route::get('/periods', [\App\Http\Controllers\Api\V1\TimetableController::class, 'indexPeriods']);
 
     // Timetable Retrieval
     Route::get('/timetable/section/{sectionId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getBySection']);
     Route::get('/timetable/teacher/{teacherId}', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getByTeacher']);
+    Route::get('/timetable/mine', [\App\Http\Controllers\Api\V1\TimetableController::class, 'getMyTimetable']);
 
     // Class Sessions (Teacher + Principal)
-    Route::middleware('role:teacher,principal')->group(function () {
+    Route::middleware('role:teacher,principal,office')->group(function () {
         Route::post('/class-sessions/open', [\App\Http\Controllers\Api\V1\ClassSessionController::class, 'open']);
     });
 
     Route::get('/class-sessions/{id}', [\App\Http\Controllers\Api\V1\ClassSessionController::class, 'show']);
 
     // Attendance Routes
-    Route::middleware('role:teacher,principal')->group(function () {
+    Route::middleware('role:teacher,principal,office')->group(function () {
         Route::post('/attendance/sessions', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'initializeSession']);
         Route::post('/attendance/sessions/{id}/submit', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'submitSession'])->middleware('throttle:30,1');
         Route::get('/attendance/section/{sectionId}', [\App\Http\Controllers\Api\V1\AttendanceController::class, 'getSectionAttendance']);
@@ -130,7 +130,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     // Class Notes
-    Route::middleware('role:teacher,principal')->group(function () {
+    Route::middleware('role:teacher,principal,office')->group(function () {
         Route::post('/class-sessions/{id}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'store']);
         Route::get('/class-sessions/{id}/notes', [\App\Http\Controllers\Api\V1\ClassNoteController::class, 'show']);
     });
@@ -144,7 +144,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     // Homework
-    Route::middleware('role:teacher,principal')->group(function () {
+    Route::middleware('role:teacher,principal,office')->group(function () {
         Route::post('/class-sessions/{id}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'store']);
         Route::get('/class-sessions/{id}/homework', [\App\Http\Controllers\Api\V1\HomeworkController::class, 'show']);
     });
@@ -158,7 +158,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     // Student Recognition
-    Route::middleware('role:teacher,principal')->group(function () {
+    Route::middleware('role:teacher,principal,office')->group(function () {
         Route::post('/class-sessions/{id}/recognition', [\App\Http\Controllers\Api\V1\RecognitionController::class, 'store']);
     });
 
@@ -210,5 +210,35 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/reports/attendance', [\App\Http\Controllers\Api\V1\ReportController::class, 'dailyAttendance']);
         Route::get('/reports/fees/outstanding', [\App\Http\Controllers\Api\V1\ReportController::class, 'outstandingDues']);
         Route::get('/reports/students', [\App\Http\Controllers\Api\V1\ReportController::class, 'studentList']);
+    });
+
+    // ==========================================
+    // TEACHER MODULE - Advanced Features
+    // ==========================================
+    Route::middleware('role:teacher,principal,office')->group(function () {
+        // Teacher Dashboard
+        Route::get('/teacher/dashboard', [\App\Http\Controllers\Api\V1\TeacherDashboardController::class, 'getDashboard']);
+        Route::get('/teacher/classes', [\App\Http\Controllers\Api\V1\TeacherDashboardController::class, 'getClasses']);
+        Route::get('/teacher/classes/{sectionId}', [\App\Http\Controllers\Api\V1\TeacherDashboardController::class, 'getClassDetail']);
+
+        // Assignments Management
+        Route::get('/teacher/assignments', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'index']);
+        Route::post('/teacher/assignments', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'store']);
+        Route::get('/teacher/assignments/{id}', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'show']);
+        Route::put('/teacher/assignments/{id}', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'update']);
+        Route::delete('/teacher/assignments/{id}', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'destroy']);
+
+        // Assignment Grading
+        Route::post('/teacher/assignments/{assignmentId}/grade/{studentId}', [\App\Http\Controllers\Api\V1\AssignmentController::class, 'gradeSubmission']);
+
+        // Gradebook
+        Route::get('/teacher/gradebook', [\App\Http\Controllers\Api\V1\GradebookController::class, 'getGradebook']);
+
+        // Communication
+        Route::get('/teacher/announcements', [\App\Http\Controllers\Api\V1\CommunicationController::class, 'index']);
+        Route::post('/teacher/announcements', [\App\Http\Controllers\Api\V1\CommunicationController::class, 'store']);
+
+        // Analytics
+        Route::get('/teacher/analytics/overview', [\App\Http\Controllers\Api\V1\TeacherAnalyticsController::class, 'getOverview']);
     });
 });
