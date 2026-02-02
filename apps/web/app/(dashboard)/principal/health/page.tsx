@@ -167,7 +167,7 @@ export default function PrincipalHealthPage() {
                                 </Alert>
                             ))}
                             {summary?.filter(s => s.status !== 'no_session' && s.attendance_percentage < 85).map(s => (
-                                <Alert key={s.section_id} variant="secondary" className="border-orange-200 bg-orange-50">
+                                <Alert key={s.section_id} variant="default" className="border-orange-200 bg-orange-50">
                                     <AlertCircle className="h-4 w-4 text-orange-600" />
                                     <AlertTitle>Low Attendance</AlertTitle>
                                     <AlertDescription>
